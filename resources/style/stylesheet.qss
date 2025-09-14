@@ -1,0 +1,238 @@
+/* 主界面背景 - 温和的米白色背景 */
+#registerui, #loginui, #widget_registerui, #forgetpasswduiClass {
+    background: #F8F9FA; /* 温和的米白色背景 */
+}
+
+/* 按钮样式 - 温和的蓝灰色主题 */
+#pushButton_login, #pushButton_register, #pushButton_get_verifiycation_code_at_registerui, #pushButton_ok, #pushButton_get_varifiycode_forget,
+#pushButton_cancle, #pushButton_submit_the_change_passwod_forget {
+    background-color: #5A6C7D; /* 温和的蓝灰色 */
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px; /* 稍大的圆角，更温和 */
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px; /* 增加字间距，更优雅 */
+}
+
+/* 按钮悬停效果 */
+#pushButton_login:hover,
+#pushButton_register:hover,
+#pushButton_get_verifiycation_code_at_registerui:hover,
+#pushButton_ok:hover,
+#pushButton_get_varifiycode_forget:hover,
+#pushButton_cancle:hover,
+#pushButton_submit_the_change_passwod_forget:hover {
+    background-color: #4A5B6B; /* 悬停时稍深的蓝灰色 */
+}
+
+/* 按钮按下效果 */
+#pushButton_login:pressed, #pushButton_register:pressed, #pushButton_get_verifiycation_code_at_registerui:pressed,
+#pushButton_get_varifiycode_forget:pressed,
+#pushButton_ok:pressed,
+#pushButton_cancle:pressed,
+#pushButton_submit_the_change_passwod_forget:pressed {
+    background-color: #3D4A56; /* 按下时更深的蓝灰色 */
+}
+
+/* 输入框样式 - 柔和的边框设计 */
+#lineEdit_username_at_registerui, #lineEdit_the_email_at_registerui, #lineEdit_passwd_at_registerui,
+#lineEdit_verify_passwd_at_registerui, #lineEdit_verifiycation_code_at_registerui,
+#lineEdit_username, #lineEdit_inputpasswd, #lineEdit_passwd_forget, #lineEdit_user_account_forget, 
+#lineEdit_varifiy_code_forget, #lineEdit_varifiy_passwd_forget, #lineEdit_id_binded_email {
+    border: 1px solid #D5D8DC; /* 柔和的灰蓝色边框 */
+    border-radius: 8px; /* 温和的圆角 */
+    padding: 10px 14px; /* 更舒适的内边距 */
+    background: #FFFFFF; /* 纯白背景 */
+    font-size: 14px;
+    color: #2C3E50; /* 深蓝灰色文字 */
+}
+
+/* 输入框焦点效果 */
+#lineEdit_username_at_registerui:focus, #lineEdit_the_email_at_registerui:focus, #lineEdit_passwd_at_registerui:focus,
+#lineEdit_verify_passwd_at_registerui:focus, #lineEdit_verifiycation_code_at_registerui:focus,
+#lineEdit_username:focus, #lineEdit_inputpasswd:focus, #lineEdit_passwd_forget:focus, #lineEdit_user_account_forget:focus,
+#lineEdit_varifiy_code_forget:focus, #lineEdit_varifiy_passwd_forget:focus, #lineEdit_id_binded_email:focus {
+    border: 2px solid #7B8FA3; /* 焦点时温和的蓝灰色边框 */
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 输入框占位符文字颜色 */
+#lineEdit_username_at_registerui::placeholder, #lineEdit_the_email_at_registerui::placeholder, #lineEdit_passwd_at_registerui::placeholder,
+#lineEdit_verify_passwd_at_registerui::placeholder, #lineEdit_verifiycation_code_at_registerui::placeholder,
+#lineEdit_username::placeholder, #lineEdit_inputpasswd::placeholder, #lineEdit_passwd_forget::placeholder, 
+#lineEdit_user_account_forget::placeholder, #lineEdit_varifiy_code_forget::placeholder, #lineEdit_varifiy_passwd_forget::placeholder, 
+#lineEdit_id_binded_email::placeholder {
+    color: #8B9DC3; /* 温和的蓝灰色占位符 */
+}
+
+/* 忘记密码标签 - 温和的紫灰色 */
+#label_fogetpasswd {
+    color: #6B73A3; /* 温和的紫灰色字体 */
+    background: transparent;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+#label_fogetpasswd:hover {
+    color: #5A6291; /* 悬停时稍深的紫灰色 */
+    background: #F1F3F7; /* 极浅的背景 */
+}
+
+/* 错误提示样式 - 温和的玫瑰色 */
+#label_mistakenote[state="error"] {
+    color: #B85450; /* 温和的玫瑰红色 */
+    background: #FDF2F2; /* 极浅的玫瑰色背景 */
+    border: 1px solid #F1C6C6; /* 浅玫瑰色边框 */
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+/* 成功提示样式 - 温和的橄榄绿 */
+#label_mistakenote[state="success"] {
+    color: #6B8E5A; /* 温和的橄榄绿色 */
+    background: #F7FAF5; /* 极浅的绿色背景 */
+    border: 1px solid #D4E5C7; /* 浅绿色边框 */
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+/* 普通标签文字 */
+QLabel {
+    color: #2C3E50; /* 深蓝灰色文字 */
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 标题标签 */
+QLabel[class="title"] {
+    color: #1A252F; /* 更深的蓝灰色标题 */
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* 副标题样式 */
+QLabel[class="subtitle"] {
+    color: #5A6C7D;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* 次要按钮样式 - 温和的边框按钮 */
+QPushButton[class="secondary"] {
+    background-color: #FFFFFF;
+    color: #5A6C7D;
+    border: 1px solid #C5D0DB;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+QPushButton[class="secondary"]:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+    border-color: #A8B8C8;
+}
+
+QPushButton[class="secondary"]:pressed {
+    background-color: #F0F2F5;
+    color: #3D4A56;
+    border-color: #95A5B5;
+}
+
+/* 取消按钮特别样式 */
+#pushButton_cancle {
+    background-color: #FFFFFF;
+    color: #6B73A3;
+    border: 1px solid #D5D8DC;
+}
+
+#pushButton_cancle:hover {
+    background-color: #F8F9FA;
+    color: #5A6291;
+    border-color: #C5C9D0;
+}
+
+#pushButton_cancle:pressed {
+    background-color: #F0F2F5;
+    color: #4A5280;
+    border-color: #B5BAC5;
+}
+
+/* 分组框样式 */
+QGroupBox {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2C3E50;
+    border: 1px solid #E1E6EB;
+    border-radius: 8px;
+    margin-top: 8px;
+    padding-top: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 8px 0 8px;
+    background-color: #F8F9FA;
+}
+
+/* 复选框样式 */
+QCheckBox {
+    color: #2C3E50;
+    font-size: 14px;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #C5D0DB;
+    border-radius: 3px;
+    background-color: #FFFFFF;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #5A6C7D;
+    border: 1px solid #5A6C7D;
+}
+
+QCheckBox::indicator:hover {
+    border: 1px solid #7B8FA3;
+}
+
+/* 滚动条样式 */
+QScrollBar:vertical {
+    background-color: #F8F9FA;
+    width: 8px;
+    border-radius: 4px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #C5D0DB;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #A8B8C8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: transparent;
+}
