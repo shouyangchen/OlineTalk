@@ -1,0 +1,141 @@
+/* 
+ * ChatPage 样式表
+ * 专为聊天页面设计的样式定义
+ */
+
+/* ========== 聊天页面主体样式 ========== */
+QWidget#ChatPageClass {
+    background-color: #F8F9FA;
+}
+
+/* ========== 聊天数据区域 ========== */
+QWidget#chat_ui_data {
+    background-color: #F8F9FA;
+}
+
+/* ========== 标题区域样式 ========== */
+QWidget#title_widget {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D5D8DC;
+}
+
+/*QLabel#title_lb {
+    color: #1A252F;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 16px;
+    background-color: transparent;
+    border: none;
+    margin: 0px;
+    qproperty-alignment: 'AlignLeft | AlignVCenter';
+}*/
+
+/* ========== 工具栏样式 ========== */
+QWidget#tool_widget {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D5D8DC;
+}
+
+/* 工具栏图标样式 */
+ClickedLabel#emjo_lb {
+    background-color: transparent;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 2px;
+}
+
+ClickedLabel#emjo_lb:hover {
+    background-color: #F8F9FA;
+}
+
+ClickedLabel#file_lb {
+    background-color: transparent;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 2px;
+}
+
+ClickedLabel#file_lb:hover {
+    background-color: #F8F9FA;
+}
+
+/* ========== 聊天消息区域样式 ========== */
+QWidget#chat_data_list {
+    background-color: #FFFFFF;
+    border-top: 1px solid #D5D8DC;
+    padding: 8px;
+}
+
+/* ========== 文本编辑框样式 ========== */
+QTextEdit#textEdit {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    selection-background-color: #F0F2F5;
+    line-height: 1.4;
+}
+
+QTextEdit#textEdit:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* ========== 底部按钮区域样式 ========== */
+QWidget#widget_5 {
+    background-color: #FFFFFF;
+    border-top: 1px solid #D5D8DC;
+    padding: 10px;
+}
+
+/* 接收按钮样式 */
+QPushButton#QP_recived {
+    background-color: #FFFFFF;
+    color: #5A6C7D;
+    border: 1px solid #C5D0DB;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+QPushButton#QP_recived:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+    border-color: #A8B8C8;
+}
+
+QPushButton#QP_recived:pressed {
+    background-color: #F0F2F5;
+    color: #3D4A56;
+    border-color: #95A5B5;
+}
+
+/* 发送按钮样式 */
+QPushButton#QP_send {
+    background-color: #5A6C7D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+QPushButton#QP_send:hover {
+    background-color: #4A5B6B;
+}
+
+QPushButton#QP_send:pressed {
+    background-color: #3D4A56;
+}
+
+QPushButton#QP_send:disabled {
+    background-color: #C5D0DB;
+    color: #8B9DC3;
+}

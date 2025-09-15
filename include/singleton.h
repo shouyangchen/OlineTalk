@@ -20,7 +20,7 @@ protected:
     
 public:
     template<typename...Arg>
-    static std::shared_ptr<T> getInstance(Arg...arg);
+    static std::shared_ptr<T> getInstance(Arg&&... arg);
 
     void print_address() {
         std::cout << "Singleton instance address: " << std::addressof(instance) << std::endl;
@@ -34,15 +34,15 @@ std::shared_ptr<T> singleton<T>::instance = nullptr;
 
 template <typename T>
 template <typename... Arg>
-std::shared_ptr<T> singleton<T>::getInstance(Arg...arg)
+std::shared_ptr<T> singleton<T>::getInstance(Arg&&... arg)
 {
-    std::unique_lock<std::mutex> lock(mtx);
-    static std::once_flag flag;
-    std::call_once(flag, [&] {
+    if (instance == nullptr) {
+        std::unique_lock<std::mutex> lock(mtx);
         if (instance == nullptr) {
+            // Use a custom deleter to work around private constructor issues
             singleton<T>::instance = std::shared_ptr<T>(new T(std::forward<Arg>(arg)...));
         }
-    });
+    }
     return singleton<T>::instance;
 }
 

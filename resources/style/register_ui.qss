@@ -1,0 +1,223 @@
+/* 
+ * 注册界面样式表
+ * 专为注册界面设计的样式定义
+ */
+
+/* ========== 注册界面主体样式 ========== */
+QDialog#registerui {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+}
+
+/* ========== 标题样式 ========== */
+QLabel[labelType="title"] {
+    color: #1A252F;
+    font-size: 24px;
+    font-weight: 600;
+    padding: 20px 0;
+}
+
+/* ========== 输入框样式 ========== */
+/* 邮箱输入框 */
+InputLine#lineEdit_the_email_at_registerui {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    margin: 8px 0;
+}
+
+InputLine#lineEdit_the_email_at_registerui:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 用户名输入框 */
+InputLine#lineEdit_username_at_registerui {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    margin: 8px 0;
+}
+
+InputLine#lineEdit_username_at_registerui:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 密码输入框 */
+InputLine#lineEdit_passwd_at_registerui {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    margin: 8px 0;
+}
+
+InputLine#lineEdit_passwd_at_registerui:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 确认密码输入框 */
+InputLine#lineEdit_verify_passwd_at_registerui {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    margin: 8px 0;
+}
+
+InputLine#lineEdit_verify_passwd_at_registerui:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 验证码输入框 */
+InputLine#lineEdit_verifiycation_code_at_registerui {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    margin: 8px 0;
+}
+
+InputLine#lineEdit_verifiycation_code_at_registerui:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* ========== 按钮样式 ========== */
+/* 获取验证码按钮 */
+QPushButton#pushButton_get_verifiycation_code_at_registerui {
+    background-color: #7B8FA3;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 4px;
+}
+
+QPushButton#pushButton_get_verifiycation_code_at_registerui:hover {
+    background-color: #6B7F93;
+}
+
+QPushButton#pushButton_get_verifiycation_code_at_registerui:pressed {
+    background-color: #5B6F83;
+}
+
+/* 确认按钮 */
+QPushButton#pushButton_ok {
+    background-color: #5A6C7D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 10px 5px;
+}
+
+QPushButton#pushButton_ok:hover {
+    background-color: #4A5B6B;
+}
+
+QPushButton#pushButton_ok:pressed {
+    background-color: #3D4A56;
+}
+
+/* 取消按钮 */
+QPushButton#pushButton_cancle {
+    background-color: #FFFFFF;
+    color: #5A6C7D;
+    border: 1px solid #C5D0DB;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 10px 5px;
+}
+
+QPushButton#pushButton_cancle:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+    border-color: #A8B8C8;
+}
+
+QPushButton#pushButton_cancle:pressed {
+    background-color: #F0F2F5;
+    color: #3D4A56;
+    border-color: #95A5B5;
+}
+
+/* ========== 状态标签样式 ========== */
+QLabel#label_mistakenote {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 5px 0;
+}
+
+QLabel#label_mistakenote[state="success"] {
+    color: #27AE60;
+    background-color: #E8F8F0;
+    border: 1px solid #D4EDDA;
+}
+
+QLabel#label_mistakenote[state="error"] {
+    color: #E74C3C;
+    background-color: #FDEDEC;
+    border: 1px solid #F5C6CB;
+}
+
+QLabel#label_mistakenote[state="info"] {
+    color: #3498DB;
+    background-color: #EBF3FD;
+    border: 1px solid #BEE5EB;
+}
+
+/* ========== 分组框样式 ========== */
+QGroupBox {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: 500;
+    color: #2C3E50;
+    padding-top: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 15px;
+    padding: 0 8px 0 8px;
+    background-color: #FFFFFF;
+}
+
+/* ========== 布局微调 ========== */
+QWidget {
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+}
+
+/* 输入框占位符样式 */
+InputLine::placeholder {
+    color: #8B9DC3;
+    font-style: italic;
+}

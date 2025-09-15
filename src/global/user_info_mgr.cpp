@@ -17,6 +17,8 @@ const std::uint64_t& user_info_mgr::get_user_id()
 }
 
 
+
+
 QString& user_info_mgr::get_user_name()
 {
 	return this->user_name;

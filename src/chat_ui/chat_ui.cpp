@@ -6,8 +6,14 @@
 #include "SystemTrayIcon.h"
 #include <QDebug>
 #include <QAction>
+#include <QMovie>
+#include <QFile>
 
 #include "chat_user_display.h"
+#include "loadinguserwidget.h"
+#include "the_user_icon_mgr.h"
+#include "user_info_mgr.h"
+#include "StyleManager.h"
 
 chat_ui::chat_ui(QWidget* parent)
     :QWidget(parent),mode(CHAT_UI_MODE::ChatMode),state(CHAT_UI_MODE::ChatMode),is_loading(false)
@@ -20,6 +26,13 @@ chat_ui::chat_ui(QWidget* parent)
         this->setMinimumHeight(600);
         this->setMinimumWidth(900);
 
+        this->ui->talk_view->setPixmap(
+	        QPixmap(":/res/msg_chat_normal.png").scaled(40, 40, Qt::KeepAspectRatioByExpanding,
+	        Qt::SmoothTransformation));
+   //     auto user_icon = the_user_icon_mgr::getInstance()->get_user_icon(
+			//QString::number(user_info_mgr::getInstance()->get_user_id()));
+		//if (!user_icon.isNull())
+		//	this->ui->user_icon->setPixmap(user_icon.scaled(50, 50, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
         this->ui->serach_edit->set_max_length(10);
         QAction* serach_action = new QAction(ui->serach_edit);
         serach_action->setIcon(QIcon(":/res/search.png"));
@@ -50,10 +63,6 @@ chat_ui::chat_ui(QWidget* parent)
         this->set_qss();
         this->add_user_list();
         // 调试输出
-        qDebug() << "Title text set to:" << ui->title_lb->text();
-        qDebug() << "Title label size:" << ui->title_lb->size();
-        qDebug() << "Title widget size:" << ui->title_widget->size();
-
         qDebug() << "chat_ui setup completed successfully";
     }
     catch (const std::exception& e) {
@@ -102,6 +111,7 @@ void chat_ui::connect_sig()
 {
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[EXIT_APP], &QAction::triggered, this, &chat_ui::when_touch_close);
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[OPEN_CHAT_UI], &QAction::triggered, this, &chat_ui::show);
+    connect(this->ui->chat_user_list, &ChatUserList::sig_loading_chat_user, this, &chat_ui::slot_loading_the_user_list);
 }
 
 void chat_ui::closeEvent(QCloseEvent* event)
@@ -181,6 +191,20 @@ void chat_ui::mousePressEvent(QMouseEvent* event)
     return QWidget::mousePressEvent(event);
 }
 
+void chat_ui::slot_loading_the_user_list()
+{
+	if (this->is_loading)
+		return;
+	this->is_loading = true;
+    auto loading_widget = new LoadingUserWidget(this);
+    loading_widget->show();
+    add_user_list();
+    loading_widget->deleteLater();
+    this->is_loading = false;
+}
+
+
+
 void chat_ui::mouseReleaseEvent(QMouseEvent* event)
 {
     this->moving = false;
@@ -223,301 +247,16 @@ void chat_ui::show_serach(bool is_serach)
 
 void chat_ui::set_qss()
 {
-    // 整体窗口样式 - 与 QSS 完全一致
-    this->setStyleSheet(
-        "QWidget#chat_ui {"
-        "    background-color: #F8F9FA;"
-        "}"
-    );
+    // 使用StyleManager加载QSS样式表
+    if (!StyleManager::getInstance()->loadStyleSheet(this, ":/style/chat_ui.qss")) {
+        qDebug() << "Failed to load chat UI stylesheet, falling back to default styles";
+        // 如果无法加载QSS文件，保留一些基本样式作为后备
+        this->setStyleSheet(
+            "QWidget#chat_ui { background-color: #F8F9FA; }"
+            "QWidget#chat_side_bar { background-color: #5A6C7D; border: none; }"
+        );
+    }
 
-    // 侧边栏样式 - 使用 QSS 中的蓝灰色主题
-    ui->chat_side_bar->setStyleSheet(
-        "QWidget#chat_side_bar {"
-        "    background-color: #5A6C7D;"
-        "    border: none;"
-        "}"
-    );
-
-    // 侧边栏图标样式 - 与 QSS 风格一致，确保图标显示
-    QString sidebarLabelStyle =
-        "QLabel {"
-        "    background-color: transparent;"
-        "    border-radius: 8px;"
-        "    padding: 8px;"
-        "    margin: 3px;"
-        "    color: #D5D8DC;"
-        "    font-size: 14px;"
-        "    min-width: 40px;"
-        "    min-height: 40px;"
-        "    max-width: 40px;"
-        "    max-height: 40px;"
-        "}"
-        "QLabel:hover {"
-        "    background-color: #4A5B6B;"
-        "    color: #FFFFFF;"
-        "}";
-
-    ui->user_icon->setStyleSheet(sidebarLabelStyle);
-    ui->talk_view->setStyleSheet(sidebarLabelStyle);
-    ui->setting_view->setStyleSheet(sidebarLabelStyle);
-    ui->about_view->setStyleSheet(sidebarLabelStyle);
-
-
-    // 用户列表区域样式 - 与 QSS 保持一致
-    ui->chat_user->setStyleSheet(
-        "QWidget#chat_user {"
-        "    background-color: #FFFFFF;"
-        "    border-right: 1px solid #D5D8DC;"
-        "}"
-    );
-
-    // 搜索区域样式 - 与 QSS 保持一致
-    ui->serach_widget->setStyleSheet(
-        "QWidget#serach_widget {"
-        "    background-color: #FFFFFF;"
-        "    border-bottom: 1px solid #D5D8DC;"
-        "    padding: 10px;"
-        "}"
-    );
-
-    // 搜索框样式 - 完全按照 QSS 输入框样式
-    ui->serach_edit->setStyleSheet(
-        "QLineEdit {"
-        "    border: 1px solid #D5D8DC;"
-        "    border-radius: 8px;"
-        "    padding: 10px 14px;"
-        "    background: #FFFFFF;"
-        "    font-size: 14px;"
-        "    color: #2C3E50;"
-        "}"
-        "QLineEdit:focus {"
-        "    border: 2px solid #7B8FA3;"
-        "    background: #FFFFFF;"
-        "    outline: none;"
-        "}"
-        "QLineEdit::placeholder {"
-        "    color: #8B9DC3;"
-        "}"
-    );
+    // 设置搜索框的占位符文本
     ui->serach_edit->setPlaceholderText("搜索好友");
-
-    // 添加好友按钮样式 - 使用 QSS 主按钮色彩
-    ui->add_button->setStyleSheet(
-        "StatusChangeButton {"
-        "    background-color: #5A6C7D;"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    padding: 6px;"
-        "}"
-        "StatusChangeButton:hover {"
-        "    background-color: #4A5B6B;"
-        "}"
-        "StatusChangeButton:pressed {"
-        "    background-color: #3D4A56;"
-        "}"
-    );
-
-    // 用户列表样式 - 与 QSS 保持一致的颜色
-// 用户列表样式 - 修改为匹配 Chat_User_Display 组件
-    QString listWidgetStyle =
-        "QListWidget {"
-        "    background-color: #FFFFFF;"
-        "    border: none;"
-        "    outline: none;"
-        "    font-size: 14px;"
-        "    padding: 0px;"
-        "    spacing: 0px;"
-        "}"
-        "QListWidget::item {"
-        "    padding: 0px;"
-        "    margin: 0px;"
-        "    border: none;"
-        "    background-color: transparent;"
-        "    min-height: 50px;"
-        "    max-height: 50px;"
-        "    border-bottom: 1px solid #E5E5EA;"
-        "}"
-        "QListWidget::item:selected {"
-        "    background-color: #E3F2FD;"
-        "    border-bottom: 1px solid #E5E5EA;"
-        "}"
-        "QListWidget::item:hover {"
-        "    background-color: #F8F9FA;"
-        "}";
-
-    ui->serach_list->setStyleSheet(listWidgetStyle);
-    ui->chat_user_list->setStyleSheet(listWidgetStyle);
-    ui->connect_user_list->setStyleSheet(listWidgetStyle);
-    // 聊天主区域样式 - 与 QSS 背景保持一致
-    ui->chat_ui_data->setStyleSheet(
-        "QWidget#chat_ui_data {"
-        "    background-color: #F8F9FA;"
-        "}"
-    );
-
-    // 标题区域样式 - 与 QSS 保持一致
-    ui->title_widget->setStyleSheet(
-        "QWidget#title_widget {"
-        "    background-color: #FFFFFF;"
-        "    border-bottom: 1px solid #D5D8DC;"
-        "}"
-    );
-
-    // 标题标签样式 - 修复对齐问题
-    ui->title_lb->setStyleSheet(
-        "QLabel#title_lb {"
-        "    color: #1A252F;"
-        "    font-size: 16px;"
-        "    font-weight: 600;"
-        "    padding: 12px 16px;"
-        "    background-color: transparent;"
-        "    border: none;"
-        "    margin: 0px;"
-        "    qproperty-alignment: 'AlignLeft | AlignVCenter';"
-        "}"
-    );
-
-    // 手动设置标题对齐
-    ui->title_lb->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-    // 工具栏样式 - 与 QSS 保持一致
-    ui->tool_widget->setStyleSheet(
-        "QWidget#tool_widget {"
-        "    background-color: #FFFFFF;"
-        "    border-bottom: 1px solid #D5D8DC;"
-        "}"
-    );
-
-    // 工具栏图标样式 - 与 QSS 按钮风格一致
-    QString toolLabelStyle =
-        "QLabel {"
-        "    background-color: transparent;"
-        "    border-radius: 8px;"
-        "    padding: 8px;"
-        "    margin: 4px;"
-        "    font-size: 16px;"
-        "    color: #5A6C7D;"
-        "}"
-        "QLabel:hover {"
-        "    background-color: #F8F9FA;"
-        "    color: #4A5B6B;"
-        "}";
-
-    ui->emjo_lb->setStyleSheet(toolLabelStyle);
-    ui->file_lb->setStyleSheet(toolLabelStyle);
-
-    // 聊天数据区域样式 - 与 QSS 保持一致
-    ui->chat_data_list->setStyleSheet(
-        "QWidget#chat_data_list {"
-        "    background-color: #FFFFFF;"
-        "    border-top: 1px solid #D5D8DC;"
-        "    padding: 8px;"
-        "}"
-    );
-
-    // 文本编辑框样式 - 完全按照 QSS 输入框样式
-    ui->textEdit->setStyleSheet(
-        "QTextEdit {"
-        "    border: 1px solid #D5D8DC;"
-        "    border-radius: 8px;"
-        "    padding: 10px 14px;"
-        "    background: #FFFFFF;"
-        "    font-size: 14px;"
-        "    color: #2C3E50;"
-        "    selection-background-color: #F0F2F5;"
-        "    line-height: 1.4;"
-        "}"
-        "QTextEdit:focus {"
-        "    border: 2px solid #7B8FA3;"
-        "    background: #FFFFFF;"
-        "    outline: none;"
-        "}"
-        // 滚动条样式 - 完全按照 QSS
-        "QScrollBar:vertical {"
-        "    background-color: #F8F9FA;"
-        "    width: 8px;"
-        "    border-radius: 4px;"
-        "    margin: 0px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "    background-color: #C5D0DB;"
-        "    border-radius: 4px;"
-        "    min-height: 20px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "    background-color: #A8B8C8;"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "    height: 0px;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "    background: transparent;"
-        "}"
-    );
-
-    // 底部按钮区域样式 - 与 QSS 保持一致
-    ui->widget_5->setStyleSheet(
-        "QWidget#widget_5 {"
-        "    background-color: #FFFFFF;"
-        "    border-top: 1px solid #D5D8DC;"
-        "    padding: 10px;"
-        "}"
-    );
-
-    // 接收按钮样式 - 修复显示问题
-    ui->QP_recived->setStyleSheet(
-        "QPushButton#QP_recived {"
-        "    background-color: #FFFFFF;"
-        "    color: #5A6C7D;"
-        "    border: 1px solid #C5D0DB;"
-        "    border-radius: 8px;"
-        "    padding: 8px 16px;"
-        "    font-size: 14px;"
-        "    font-weight: 500;"
-        "    text-align: center;"
-        "}"
-        "QPushButton#QP_recived:hover {"
-        "    background-color: #F8F9FA;"
-        "    color: #4A5B6B;"
-        "    border-color: #A8B8C8;"
-        "}"
-        "QPushButton#QP_recived:pressed {"
-        "    background-color: #F0F2F5;"
-        "    color: #3D4A56;"
-        "    border-color: #95A5B5;"
-        "}"
-    );
-
-    // 发送按钮样式
-    ui->QP_send->setStyleSheet(
-        "QPushButton#QP_send {"
-        "    background-color: #5A6C7D;"
-        "    color: #FFFFFF;"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    padding: 8px 16px;"
-        "    font-size: 14px;"
-        "    font-weight: 500;"
-        "    text-align: center;"
-        "}"
-        "QPushButton#QP_send:hover {"
-        "    background-color: #4A5B6B;"
-        "}"
-        "QPushButton#QP_send:pressed {"
-        "    background-color: #3D4A56;"
-        "}"
-        "QPushButton#QP_send:disabled {"
-        "    background-color: #C5D0DB;"
-        "    color: #8B9DC3;"
-        "}"
-    );
-
-    // 手动设置按钮尺寸确保文字显示
-    ui->QP_recived->setMinimumSize(80, 32);
-    ui->QP_recived->setMaximumSize(QWIDGETSIZE_MAX, 32);
-    ui->QP_recived->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-
-    ui->QP_send->setMinimumSize(80, 32);
-    ui->QP_send->setMaximumSize(QWIDGETSIZE_MAX, 32);
-    ui->QP_send->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 }

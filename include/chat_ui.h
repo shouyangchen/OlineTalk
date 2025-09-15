@@ -33,6 +33,7 @@ public:
     ~chat_ui();
 public  slots:
     void when_touch_close();
+    void slot_loading_the_user_list();
 
 protected:
     void mouseMoveEvent(QMouseEvent* event) override;

@@ -14,12 +14,7 @@ mainwindow::mainwindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::mainwindow) {
     ui->setupUi(this);
     this->work_thread = new QThread(this);
-    
-    try {
-        the_user_icon_mgr::getInstance().get()->moveToThread(this->work_thread);
-    } catch (const std::exception& e) {
-        qDebug() << "Error moving user icon manager to thread:" << e.what();
-    }
+
 
     TcpMgr::getInstance();
     this->work_thread->start();
@@ -34,7 +29,7 @@ mainwindow::mainwindow(QWidget* parent) :
     this->loginui_instance->show();//显示登录界面
     SystemTrayIcon::getInstance(QIcon(":/res/default_user_icon_withe_black.png"), nullptr);
     SystemTrayIcon::getInstance()->show();
-    //this->chat_ui_instance->show();
+    this->chat_ui_instance->show();
 }
 
 

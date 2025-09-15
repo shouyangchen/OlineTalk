@@ -1,0 +1,257 @@
+/* 
+ * 全局样式表
+ * 包含整个应用程序的通用样式定义
+ */
+
+/* ========== 全局变量定义 ========== */
+/* 
+ * 颜色变量（在实际的QSS中，这些只是注释，用于参考）
+ * 主色调：#5A6C7D（蓝灰色）
+ * 背景色：#F8F9FA（浅灰色）
+ * 白色：#FFFFFF
+ * 边框色：#D5D8DC
+ * 文字色：#2C3E50（深蓝灰）
+ * 占位符文字：#8B9DC3
+ * 悬停色：#4A5B6B
+ * 按下色：#3D4A56
+ */
+
+/* ========== 通用组件样式 ========== */
+
+/* 通用输入框样式 */
+QLineEdit {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+}
+
+QLineEdit:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+QLineEdit::placeholder {
+    color: #8B9DC3;
+}
+
+/* 通用按钮样式 */
+QPushButton {
+    background-color: #5A6C7D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+QPushButton:hover {
+    background-color: #4A5B6B;
+}
+
+QPushButton:pressed {
+    background-color: #3D4A56;
+}
+
+QPushButton:disabled {
+    background-color: #C5D0DB;
+    color: #8B9DC3;
+}
+
+/* 次要按钮样式 */
+QPushButton[buttonType="secondary"] {
+    background-color: #FFFFFF;
+    color: #5A6C7D;
+    border: 1px solid #C5D0DB;
+}
+
+QPushButton[buttonType="secondary"]:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+    border-color: #A8B8C8;
+}
+
+QPushButton[buttonType="secondary"]:pressed {
+    background-color: #F0F2F5;
+    color: #3D4A56;
+    border-color: #95A5B5;
+}
+
+/* 通用列表样式 */
+QListWidget {
+    background-color: #FFFFFF;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+QListWidget::item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E5EA;
+}
+
+QListWidget::item:selected {
+    background-color: #E3F2FD;
+}
+
+QListWidget::item:hover {
+    background-color: #F8F9FA;
+}
+
+/* 通用滚动条样式 */
+QScrollBar:vertical {
+    background-color: #F8F9FA;
+    width: 8px;
+    border-radius: 4px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #C5D0DB;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #A8B8C8;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+QScrollBar:horizontal {
+    background-color: #F8F9FA;
+    height: 8px;
+    border-radius: 4px;
+    margin: 0px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #C5D0DB;
+    border-radius: 4px;
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #A8B8C8;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: transparent;
+}
+
+/* 通用文本编辑器样式 */
+QTextEdit {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    selection-background-color: #F0F2F5;
+}
+
+QTextEdit:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 通用标签样式 */
+QLabel {
+    color: #2C3E50;
+    font-size: 14px;
+}
+
+QLabel[labelType="title"] {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1A252F;
+}
+
+QLabel[labelType="subtitle"] {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2C3E50;
+}
+
+QLabel[labelType="caption"] {
+    font-size: 12px;
+    color: #8B9DC3;
+}
+
+/* 状态标签样式 */
+QLabel[state="success"] {
+    color: #27AE60;
+}
+
+QLabel[state="error"] {
+    color: #E74C3C;
+}
+
+QLabel[state="warning"] {
+    color: #F39C12;
+}
+
+QLabel[state="info"] {
+    color: #3498DB;
+}
+
+/* 通用对话框样式 */
+QDialog {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+}
+
+/* 通用分组框样式 */
+QGroupBox {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 8px 0 8px;
+}
+
+/* 通用选项卡样式 */
+QTabWidget::pane {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+}
+
+QTabBar::tab {
+    background-color: #F8F9FA;
+    color: #5A6C7D;
+    padding: 8px 16px;
+    margin-right: 2px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+QTabBar::tab:selected {
+    background-color: #FFFFFF;
+    color: #2C3E50;
+    border-bottom: 2px solid #5A6C7D;
+}
+
+QTabBar::tab:hover {
+    background-color: #E8EDF3;
+}

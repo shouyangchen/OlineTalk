@@ -1,0 +1,259 @@
+/* 
+ * Chat UI 样式表
+ * 包含聊天界面的所有组件样式
+ */
+
+/* ========== 全局样式 ========== */
+QWidget#chat_ui {
+    background-color: #F8F9FA;
+}
+
+/* ========== 侧边栏样式 ========== */
+QWidget#chat_side_bar {
+    background-color: #5A6C7D;
+    border: none;
+}
+
+/* 侧边栏图标样式 */
+#chat_side_bar QLabel {
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 3px;
+    color: #D5D8DC;
+    font-size: 14px;
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+}
+
+#chat_side_bar QLabel:hover {
+    background-color: #4A5B6B;
+    color: #FFFFFF;
+}
+
+/* ========== 用户列表区域样式 ========== */
+QWidget#chat_user {
+    background-color: #FFFFFF;
+    border-right: 1px solid #D5D8DC;
+}
+
+/* ========== 搜索区域样式 ========== */
+QWidget#serach_widget {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D5D8DC;
+    padding: 10px;
+}
+
+/* 搜索框样式 */
+#serach_widget QLineEdit {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+}
+
+#serach_widget QLineEdit:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+#serach_widget QLineEdit::placeholder {
+    color: #8B9DC3;
+}
+
+/* ========== 按钮样式 ========== */
+/* 添加好友按钮 */
+StatusChangeButton {
+    background-color: #5A6C7D;
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+StatusChangeButton:hover {
+    background-color: #4A5B6B;
+}
+
+StatusChangeButton:pressed {
+    background-color: #3D4A56;
+}
+
+/* 发送按钮样式 */
+QPushButton#QP_send {
+    background-color: #5A6C7D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+QPushButton#QP_send:hover {
+    background-color: #4A5B6B;
+}
+
+QPushButton#QP_send:pressed {
+    background-color: #3D4A56;
+}
+
+QPushButton#QP_send:disabled {
+    background-color: #C5D0DB;
+    color: #8B9DC3;
+}
+
+/* 接收按钮样式 */
+QPushButton#QP_recived {
+    background-color: #FFFFFF;
+    color: #5A6C7D;
+    border: 1px solid #C5D0DB;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+QPushButton#QP_recived:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+    border-color: #A8B8C8;
+}
+
+QPushButton#QP_recived:pressed {
+    background-color: #F0F2F5;
+    color: #3D4A56;
+    border-color: #95A5B5;
+}
+
+/* ========== 列表样式 ========== */
+/* 用户列表通用样式 */
+QListWidget {
+    background-color: #FFFFFF;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 0px;
+    spacing: 0px;
+}
+
+QListWidget::item {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    background-color: transparent;
+    min-height: 50px;
+    max-height: 50px;
+    border-bottom: 1px solid #E5E5EA;
+}
+
+QListWidget::item:selected {
+    background-color: #E3F2FD;
+    border-bottom: 1px solid #E5E5EA;
+}
+
+QListWidget::item:hover {
+    background-color: #F8F9FA;
+}
+
+/* ========== 聊天区域样式 ========== */
+/* 标题区域 */
+QWidget#title_widget {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D5D8DC;
+}
+
+/*QLabel#title_lb {
+    color: #1A252F;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 14px;
+    background-color: transparent;
+    border: none;
+    margin: 0px;
+    qproperty-alignment: 'AlignLeft | AlignVCenter';
+}*/
+
+/* 工具栏样式 */
+/*QWidget#tool_widget {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D5D8DC;
+}*/
+
+#tool_widget QLabel {
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 4px;
+    font-size: 16px;
+    color: #5A6C7D;
+}
+
+#tool_widget QLabel:hover {
+    background-color: #F8F9FA;
+    color: #4A5B6B;
+}
+
+/* 聊天数据区域 */
+QWidget#chat_data_list {
+    background-color: #FFFFFF;
+    border-top: 1px solid #D5D8DC;
+    padding: 8px;
+}
+
+/* 文本编辑框样式 */
+QTextEdit {
+    border: 1px solid #D5D8DC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    font-size: 14px;
+    color: #2C3E50;
+    selection-background-color: #F0F2F5;
+    line-height: 1.4;
+}
+
+QTextEdit:focus {
+    border: 2px solid #7B8FA3;
+    background: #FFFFFF;
+    outline: none;
+}
+
+/* 滚动条样式 */
+QScrollBar:vertical {
+    background-color: #F8F9FA;
+    width: 8px;
+    border-radius: 4px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #C5D0DB;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #A8B8C8;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+
+/* 底部按钮区域 */
+QWidget#widget_5 {
+    background-color: #FFFFFF;
+    border-top: 1px solid #D5D8DC;
+    padding: 10px;
+}
