@@ -1,6 +1,11 @@
 #include "chatpage.h"
 #include <QDebug>
+
+#include "chatitembase.h"
+#include "global.h"
+#include "PictureBubble.h"
 #include "StyleManager.h"
+#include "TextBubble.h"
 
 ChatPage::ChatPage(QWidget *parent)
 	: QWidget(parent)
@@ -51,7 +56,51 @@ ChatPage::ChatPage(QWidget *parent)
 	// 设置鼠标悬停效果
 	ui->emjo_lb->setCursor(Qt::PointingHandCursor);
 	ui->file_lb->setCursor(Qt::PointingHandCursor);
+	this->connect_sig();
 }
+
+
+void ChatPage::connect_sig()
+{
+	connect(this->ui->QP_send, &QPushButton::clicked, this, &ChatPage::on_send_btn_clicked);
+}
+
+void ChatPage::on_send_btn_clicked()
+{
+	// 发送按钮点击事件
+	auto text_edit = this->ui->textEdit;
+	ChatRole role = ChatRole::SELF;
+	QString user_name = QStringLiteral("陈守阳");
+	QString user_icon = ":/res/head_1.png";
+	const QVector<MsgInfo>& msg_list = text_edit->getMsgList();
+	for (int i=0;i<msg_list.size();++i)
+	{
+		QString type = msg_list[i].msgFlag;
+		ChatItemBase* item = new ChatItemBase(role);
+		item->set_user_name(user_name);
+		item->set_user_icon(QPixmap(user_icon));
+		QWidget* Bubble = nullptr;
+		if (type=="text")
+		{
+			Bubble = new TextBubble(role, msg_list[i].content);
+			qDebug() << msg_list[i].content;
+		}
+		else if (type == "image")
+		{
+			Bubble = new PictureBubble(QPixmap(msg_list[i].content), role);
+			qDebug() << msg_list[i].content;
+		}
+		else if (type == "file")
+		{
+		}
+		if (Bubble != nullptr)
+		{
+			item->set_widget(Bubble);
+			this->ui->chat_view->append_item(item);
+		}
+	}
+}
+
 
 ChatPage::~ChatPage()
 {

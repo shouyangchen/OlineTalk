@@ -85,7 +85,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_2" native="true"/>
+       <widget class="ChatView" name="chat_view" native="true"/>
       </item>
       <item>
        <widget class="QWidget" name="tool_widget" native="true">
@@ -272,7 +272,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QTextEdit" name="textEdit">
+          <widget class="MessageTextEdit" name="textEdit">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -291,7 +291,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_5" native="true">
+       <widget class="QWidget" name="send_message_view" native="true">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -376,6 +376,17 @@
    <class>ClickedLabel</class>
    <extends>QLabel</extends>
    <header location="global">clickedlabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ChatView</class>
+   <extends>QWidget</extends>
+   <header location="global">chatview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MessageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header location="global">MessageTextEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -1,0 +1,37 @@
+/* 
+ * ChatView 使用示例
+ * 展示如何使用ChatView的各种消息类型和样式
+ */
+
+/*
+// 在其他组件中使用ChatView的示例代码：
+
+#include "chatview.h"
+
+// 创建ChatView实例
+ChatView* chatView = new ChatView(this);
+
+// 添加系统消息
+chatView->add_system_message("用户已加入群聊");
+
+// 添加其他人的消息
+chatView->add_message("大家好！", "other", "14:30");
+
+// 添加自己的消息
+chatView->add_message("你好！很高兴认识大家", "self", "14:31");
+
+// 添加带时间戳的消息
+chatView->add_message("今天天气真不错", "other", "14:32");
+
+// 添加系统通知
+chatView->add_system_message("用户离开了群聊");
+
+// 如果需要添加自定义样式的消息项，可以创建QWidget并使用append_item
+QWidget* customMessage = new QWidget();
+customMessage->setProperty("messageType", "bubble");
+customMessage->setProperty("sender", "self");
+customMessage->setProperty("messageState", "sending"); // 发送中状态
+// ... 设置自定义消息的布局和内容 ...
+chatView->append_item(customMessage);
+
+*/

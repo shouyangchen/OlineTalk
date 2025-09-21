@@ -109,7 +109,23 @@ void loginui::init_handlers()
         auto uid = obj["uid"].toInt();
         auto token = obj["token"].toString();
         auto host = obj["host"].toString();
-        
+        QString user_icon_str = obj["user_icon"].toString();
+        QByteArray user_icon_data;
+        if (user_icon_str == "NULL") {
+            user_icon_data.clear(); // 没有头像
+        } else {
+            user_icon_data = obj["user_icon"].toVariant().toByteArray(); // 直接获取二进制数据
+        }
+        QPixmap user_icon = QPixmap(user_icon_data);
+        if (!user_icon.isNull())
+        {
+            auto user_info = user_info_mgr::getInstance(user_icon, QString{}, QString{}, uid);
+            qDebug() << "get user_icon sussce!";
+        }
+        else
+        {
+            auto user_info = user_info_mgr::getInstance(QPixmap{}, QString{}, QString{}, uid);
+        }
         // 处理端口 - 可能是字符串也可能是数字
         auto portValue = obj["port"];
         int port = 0;
@@ -133,7 +149,6 @@ void loginui::init_handlers()
         
         qDebug() << QJsonDocument(obj).toJson();
         qDebug() << "Port value from JSON:" << port << "Type:" << (portValue.isString() ? "String" : "Number");
-        auto user_info=user_info_mgr::getInstance(QPixmap{}, QString{}, QString{}, uid);
         server_info server{ host,static_cast<quint16>(port) };
         qDebug() << "User logged in successfully with ID:" << uid;
         qDebug() << "Server info - Host:" << server.host << "Port:" << server.port;

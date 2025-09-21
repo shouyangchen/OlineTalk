@@ -41,6 +41,7 @@ the_user_icon_mgr::the_user_icon_mgr()
 			return;
 		}
 	}
+	connect(this, &the_user_icon_mgr::sig_the_update_the_user_icon, this, &the_user_icon_mgr::set_user_icon);
 }
 
 the_user_icon_mgr::~the_user_icon_mgr()
@@ -129,5 +130,23 @@ QPixmap the_user_icon_mgr::get_user_icon(QString& user_id)
 			qDebug() << "No icon found for user_id:" << user_id;
 			return { ":/res/default_user_icon.png" };
 		}
+	}
+}
+
+void the_user_icon_mgr::set_user_icon(QString& user_id, QPixmap& user_icon)// 设置用户头像同时更新本地的头像数据库
+{
+	QByteArray byteArray;
+	QDataStream stream(&byteArray, QIODevice::WriteOnly);
+	stream << user_icon; // 将QPixmap转换为字节数组
+
+	std::lock_guard<std::mutex> lock(icon_mutex); // 加锁以确保线程安全
+	this->query.prepare("REPLACE INTO user_icons (user_id, icon) VALUES (:id, :pix)");
+	this->query.bindValue(":id", user_id);
+	this->query.bindValue(":pix", byteArray);
+	if (!this->query.exec()) {
+		qDebug() << "Failed to insert/update user icon:" << this->query.lastError().text();
+	} else {
+		qDebug() << "User icon inserted/updated successfully.";
+		emit user_icon_changed(user_id, user_icon);
 	}
 }
