@@ -48,5 +48,11 @@ void HttpMgr::do_when_http_finish(ReqId req_id, QString res, ErrorCodes err, Mod
 		case Modules::MODULE_FORGET_PASSWD:
 			emit forget_passwd_mod_finsh(req_id, std::move(res), ErrorCodes::SUCCESS);
 			break;
+		case Modules::MODULE_USER:
+			emit get_user_icon_done(req_id, std::move(res), ErrorCodes::SUCCESS);
+            qDebug() << "user icon!";
+			break;
+        default:
+            break;
     }
 }

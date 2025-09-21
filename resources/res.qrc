@@ -4,6 +4,7 @@
         <file>style/stylesheet.qss</file>
         <file>style/chat_ui.qss</file>
         <file>style/chatpage.qss</file>
+        <file>style/chatview.qss</file>
         <file>style/global.qss</file>
         <file>res/loading.gif</file>
         <file>res/default_user_icon_withe_black.png</file>
@@ -60,5 +61,6 @@
         <file>res/head_5.jpg</file>
         <file>res/head_1.jpg</file>
         <file>res/head_2.jpg</file>
+        <file>res/message.png</file>
     </qresource>
 </RCC>

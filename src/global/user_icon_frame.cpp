@@ -5,7 +5,9 @@
 #include "loginui.h"
 
 user_icon_frame::user_icon_frame(QWidget* parent) :QFrame(parent)
-{}
+{
+    connect(the_user_icon_mgr::getInstance().get(), &the_user_icon_mgr::user_icon_changed, this, &user_icon_frame::draw_user_icon);
+}
 
 user_icon_frame::~user_icon_frame()
 {

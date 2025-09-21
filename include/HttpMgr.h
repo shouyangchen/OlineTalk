@@ -31,6 +31,7 @@ signals:
     void reg_mod_finish(ReqId,QString,ErrorCodes);//向注册模块发送完成http
 	void login_mod_finish(ReqId, QString, ErrorCodes);//向登录模块发送完成http
 	void forget_passwd_mod_finsh(ReqId, QString, ErrorCodes);//向忘记密码模块发送完成http
+    void get_user_icon_done(ReqId, QString, ErrorCodes);
 private:
     friend class singleton<HttpMgr>;//通过友元就可以让单例能够访问起构造函数创建HttpMgr了
     HttpMgr();

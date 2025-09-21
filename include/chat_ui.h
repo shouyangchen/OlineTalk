@@ -22,11 +22,13 @@ class chat_ui : public QWidget
 {
     Q_OBJECT
 private:
+	friend class mainwindow;
     void connect_sig();
     void set_qss();
     QPoint last_point__pos;
     bool moving = {};
     bool is_loading;
+    QHash<QString, int>*the_stack_widget_index;
 public:
     explicit chat_ui(QWidget *parent = nullptr);
     void add_user_list();
@@ -45,6 +47,7 @@ private:
     void show_serach(bool is_serach);
     CHAT_UI_MODE mode;//模式
     CHAT_UI_MODE state;//状态
+    void init_the_hash_of_stack_widget();
 };
 
 #endif // CHAT_UI_H

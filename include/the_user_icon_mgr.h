@@ -26,12 +26,16 @@ private:
 	void init_db(); // 初始化数据库
 	signals:
 		void user_icon_changed(QString &user_id,QPixmap&user_icon); // 用户头像改变时发出的信号
+		void sig_the_update_the_user_icon(QString& user_id,QString &email, QPixmap& user_icon);
+		void sig_notify_the_icon_frame(const QPixmap& user_icon);//当发生变化后通知绘制界面
 public:
 	virtual ~the_user_icon_mgr();
 	the_user_icon_mgr(const the_user_icon_mgr&) = delete;
 	the_user_icon_mgr& operator=(const the_user_icon_mgr&) = delete;
-	QPixmap get_user_icon(QString& user_id);
+	QPixmap get_user_icon(QString user_id,QString user_email);
 
+public slots:
+	void set_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon);
 };
 #endif // THE_USER_ICON_MGR_H
 

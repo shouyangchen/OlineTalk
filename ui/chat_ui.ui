@@ -83,29 +83,68 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="talk_view">
+          <widget class="StateWidget" name="talk_view" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>40</width>
-             <height>40</height>
+             <width>50</width>
+             <height>50</height>
             </size>
            </property>
-           <property name="text">
-            <string/>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="setting_view">
-           <property name="text">
-            <string/>
+          <widget class="StateWidget" name="setting_view" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="about_view">
-           <property name="text">
-            <string/>
+          <widget class="StateWidget" name="about_view" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -233,8 +272,13 @@
    </item>
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>3</number>
+     </property>
      <widget class="ChatPage" name="chat_page"/>
-     <widget class="QWidget" name="page_2"/>
+     <widget class="QWidget" name="setting_page"/>
+     <widget class="QWidget" name="freind_page"/>
+     <widget class="QWidget" name="about_page"/>
     </widget>
    </item>
   </layout>
@@ -259,6 +303,12 @@
    <class>ChatPage</class>
    <extends>QWidget</extends>
    <header location="global">chatpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StateWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">StateWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

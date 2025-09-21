@@ -85,7 +85,7 @@ QTextEdit#textEdit:focus {
 }
 
 /* ========== 底部按钮区域样式 ========== */
-QWidget#widget_5 {
+QWidget#send_message_view {
     background-color: #FFFFFF;
     border-top: 1px solid #D5D8DC;
     padding: 10px;

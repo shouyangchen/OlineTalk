@@ -70,7 +70,7 @@ void loginui::connect_signals() {
     connect(TcpMgr::getInstance().get(), &TcpMgr::sig_connect_server, TcpMgr::getInstance().get(), &TcpMgr::connect_to_server);
 }
 
-void loginui::on_pushButton_login_clicked() {
+void loginui::on_pushButton_login_clicked() {//新增加利用uid或者邮箱登录
     auto username = this->ui->lineEdit_username->text();
     auto passwd = this->ui->lineEdit_inputpasswd->text();
     if (username.isEmpty()) {
@@ -83,9 +83,17 @@ void loginui::on_pushButton_login_clicked() {
         QApplication::beep();
         return;
     }
-    // Send login request
     QJsonObject jsonObject;
-    jsonObject["email"] = username;
+    // Send login request
+    if (adjust_is_email(username))//如果为邮箱登录
+    {
+        jsonObject["email"] = username;
+        jsonObject["is_email"] = 1;
+    }
+    else {
+        jsonObject["uid"] = username;
+        jsonObject["is_email"] = 0;
+    }
     jsonObject["passwd"] = passwd;
 	emit HttpMgr::getInstance()->sendRequest(QUrl(gate_url_prefix + "/user_login"), jsonObject,ReqId::ID_USER_LOGIN,Modules::MODULE_LOGIN);
     gif_player::getInstance()->play_the_gif(the_gif_order::THE_LOADING_GIF, this->parentWidget());
@@ -106,10 +114,12 @@ void loginui::init_handlers()
             emit gif_player::getInstance()->sig_stop_display();
             return;
         }
+
         auto uid = obj["uid"].toInt();
         auto token = obj["token"].toString();
         auto host = obj["host"].toString();
-        
+
+    	auto user_info = user_info_mgr::getInstance(QPixmap{}, QString{this->ui->lineEdit_username->text()}, QString{}, uid);
         // 处理端口 - 可能是字符串也可能是数字
         auto portValue = obj["port"];
         int port = 0;
@@ -133,7 +143,6 @@ void loginui::init_handlers()
         
         qDebug() << QJsonDocument(obj).toJson();
         qDebug() << "Port value from JSON:" << port << "Type:" << (portValue.isString() ? "String" : "Number");
-        auto user_info=user_info_mgr::getInstance(QPixmap{}, QString{}, QString{}, uid);
         server_info server{ host,static_cast<quint16>(port) };
         qDebug() << "User logged in successfully with ID:" << uid;
         qDebug() << "Server info - Host:" << server.host << "Port:" << server.port;
@@ -160,7 +169,42 @@ void loginui::init_handlers()
         
         qDebug() << server.host;
 		});
+
+    this->handlers.insert(ReqId::ID_GET_USER_ICON, [this](const QJsonObject&obj)
+        {
+            if (!(obj["error"].toInt()==ErrorCodes::SUCCESS))
+            {
+                qDebug() << "can't get user icon";
+                return;
+            }
+            else
+            {
+                auto user_icon_data = obj["user_icon"].toVariant().toByteArray();
+				QByteArray byteArray = QByteArray::fromBase64(user_icon_data);//对用户头像进行base64解码
+                QPixmap user_icon;
+                if (!user_icon.loadFromData(byteArray))
+                {
+                    qDebug() << "Failed to load user icon from data";
+                    return;
+                }
+                auto account = this->ui->lineEdit_username->text();
+                auto icon_mgr = the_user_icon_mgr::getInstance();
+                if (adjust_is_email(account))
+                {
+					user_icon = icon_mgr->get_user_icon(QString{}, account);//如果是邮箱登录则传入邮箱
+                }
+                else
+				{
+                    user_icon = icon_mgr->get_user_icon(account, QString{});//如果是账号登录则传入账号
+				}
+                emit this->have_the_user_icon(user_icon);
+                user_info_mgr::getInstance(user_icon, account, QString{}, std::int64_t{});
+				qDebug() << "user icon get success";
+            }
+        });
 }
+
+
 void loginui::do_when_login_mod_finish(ReqId req_id, QString res, ErrorCodes err) {
 	if (err != ErrorCodes::SUCCESS) {
          this->set_the_wrong_tip("网络错误！更换网络环境之后再次重试！");
@@ -203,12 +247,45 @@ loginui::~loginui() {
 }
 
 
+void loginui::do_get_the_user_icon()
+{
+    //该方法主要是当用户输入完之后被设置了默认头像之后就开是从服务器获取头像然后更新本地数据库头像
+    auto user_id = this->ui->lineEdit_username->text();
+	if (adjust_is_email(user_id))//如果为邮箱登录
+    {
+        QJsonObject user_icon_json;
+        user_icon_json["email"] = user_id;
+        user_icon_json["uid"] = "NULL";
+        user_icon_json["is_email"] = 1;
+        emit HttpMgr::getInstance()->sendRequest(QUrl(gate_url_prefix + "/get_user_icon"), user_icon_json, ReqId::ID_GET_USER_ICON, Modules::MODULE_LOGIN);//发送获取头像请求
+    }
+	else//如果为账号登录
+    {
+	    QJsonObject user_icon_json;
+		user_icon_json["email"] = "NULL";
+	    user_icon_json["uid"] = user_id;
+	    user_icon_json["is_email"] = 0;
+	    emit HttpMgr::getInstance()->sendRequest(QUrl(gate_url_prefix + "/get_user_icon"), user_icon_json, ReqId::ID_GET_USER_ICON, Modules::MODULE_LOGIN);//发送获取头像请求
+    }
+}
+
+
+
 void loginui::do_when_the_account_input_done()
 {
 	auto account = this->ui->lineEdit_username->text();
     if (account.isEmpty())
         return;
 	auto icon_mgr = the_user_icon_mgr::getInstance();
-	this->user_icon = icon_mgr->get_user_icon(account);
-	emit this->have_the_user_icon(this->user_icon);
+	if (adjust_is_email(account))
+	{
+		this->user_icon = icon_mgr->get_user_icon(QString{}, account);// 如果是邮箱登录则传入邮箱
+		emit this->have_the_user_icon(this->user_icon);
+	}
+    else
+    {
+	    this->user_icon = icon_mgr->get_user_icon(account, QString{});// 如果是账号登录则传入账号
+	    emit this->have_the_user_icon(this->user_icon);
+    }
+    this->do_get_the_user_icon();
 }

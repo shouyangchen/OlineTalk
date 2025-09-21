@@ -2,6 +2,7 @@
 #include <QCloseEvent>
 #include <QApplication>
 #include <QMouseEvent>
+#include <QTimer>
 #include "ui_chat_ui.h"
 #include "SystemTrayIcon.h"
 #include <QDebug>
@@ -9,6 +10,7 @@
 #include <QMovie>
 #include <QFile>
 
+#include "add_user_item.h"
 #include "chat_user_display.h"
 #include "loadinguserwidget.h"
 #include "the_user_icon_mgr.h"
@@ -25,14 +27,10 @@ chat_ui::chat_ui(QWidget* parent)
         ui->setupUi(this);
         this->setMinimumHeight(600);
         this->setMinimumWidth(900);
-
+        this->init_the_hash_of_stack_widget();
         this->ui->talk_view->setPixmap(
-	        QPixmap(":/res/msg_chat_normal.png").scaled(40, 40, Qt::KeepAspectRatioByExpanding,
-	        Qt::SmoothTransformation));
-   //     auto user_icon = the_user_icon_mgr::getInstance()->get_user_icon(
-			//QString::number(user_info_mgr::getInstance()->get_user_id()));
-		//if (!user_icon.isNull())
-		//	this->ui->user_icon->setPixmap(user_icon.scaled(50, 50, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+	        QPixmap(":/res/message.png").scaled(40, 40, Qt::KeepAspectRatioByExpanding,
+	        Qt::SmoothTransformation));;
         this->ui->serach_edit->set_max_length(10);
         QAction* serach_action = new QAction(ui->serach_edit);
         serach_action->setIcon(QIcon(":/res/search.png"));
@@ -62,6 +60,17 @@ chat_ui::chat_ui(QWidget* parent)
         this->connect_sig();
         this->set_qss();
         this->add_user_list();
+		this->ui->serach_edit->setFocusPolicy(Qt::ClickFocus);//设置为点击才获得焦点
+        this->ui->user_icon->setPixmap(QPixmap(":/res/default_user_icon.png").scaled(40,40,Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        this->ui->talk_view->increment_message_count();
+        this->ui->about_view->setPixmap(QPixmap(":/res/settings_press.png").scaled(40, 40, Qt::KeepAspectRatio,Qt::SmoothTransformation));
+        this->ui->about_view->setObjectName("about_view");
+		this->ui->talk_view->setObjectName("talk_view");
+		this->ui->about_view->setToolTip("设置");
+		this->ui->talk_view->setToolTip("消息");
+        this->ui->serach_list->addItem(new QListWidgetItem());
+		this->ui->serach_list->setItemWidget(this->ui->serach_list->item(0), new add_user_item());
+        this->show_serach(false);
         // 调试输出
         qDebug() << "chat_ui setup completed successfully";
     }
@@ -112,6 +121,30 @@ void chat_ui::connect_sig()
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[EXIT_APP], &QAction::triggered, this, &chat_ui::when_touch_close);
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[OPEN_CHAT_UI], &QAction::triggered, this, &chat_ui::show);
     connect(this->ui->chat_user_list, &ChatUserList::sig_loading_chat_user, this, &chat_ui::slot_loading_the_user_list);
+    connect(this->ui->serach_edit, &SerachEdit::sig_focus_in, [this]()
+        {
+            //当获得焦点的时候显示搜索的QListWidget
+            this->show_serach(true);
+        });
+    connect(this->ui->about_view->display_the_message_icon_label_m, &ClickedLabel::Clicked, [this]
+        {
+			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("about_view"));
+			this->show_serach(false);
+
+        });
+    connect(this->ui->talk_view->display_the_message_icon_label_m, &ClickedLabel::Clicked, [this]
+        {
+			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("chat_view"));
+			this->show_serach(false);
+        });
+    connect(this->ui->serach_edit, &SerachEdit::sig_focus_out, [this]
+        {
+			if (this->ui->serach_list->count() == 1)//只有一个添加好友的item没有其他搜索结果时
+            {
+				this->show_serach(false);
+            }
+			return;//当失去焦点的时候如果没有搜索结果则隐藏搜索的QListWidget否者保持显示
+        });
 }
 
 void chat_ui::closeEvent(QCloseEvent* event)
@@ -147,6 +180,19 @@ void chat_ui::add_user_list()
 }
 
 
+void chat_ui::init_the_hash_of_stack_widget()
+{
+    the_stack_widget_index = new QHash<QString, int>();
+    the_stack_widget_index->insert("chat_view", 0);
+    the_stack_widget_index->insert("setting_view", 1);
+    the_stack_widget_index->insert("connect_view", 2);
+    the_stack_widget_index->insert("about_view", 3);
+
+}
+
+
+
+
 chat_ui::~chat_ui()
 {
     qDebug() << "Destroying chat_ui instance";
@@ -159,6 +205,11 @@ chat_ui::~chat_ui()
             delete ui;
             ui = nullptr;
         }
+        if (the_stack_widget_index) {
+            qDebug() << "Deleting the_stack_widget_index";
+            delete the_stack_widget_index;
+            the_stack_widget_index = nullptr;
+		}
         qDebug() << "chat_ui destroyed successfully";
     }
     catch (const std::exception& e) {

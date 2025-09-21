@@ -6,7 +6,8 @@
 
 #include "mainwindow.h"
 #include <qlayout.h>
-
+#include <ui_chat_ui.h>
+#include <user_info_mgr.h>
 #include "TcpMgr.h"
 #include "ui_mainwindow.h"
 
@@ -25,8 +26,8 @@ mainwindow::mainwindow(QWidget* parent) :
     this->setMaximumSize(QSize(350, 550));
     this->setMinimumSize(QSize(350, 550));
     this->setCentralWidget(this->loginui_instance);
-    this->chat_ui_instance = new chat_ui();
     this->loginui_instance->show();//显示登录界面
+    this->chat_ui_instance = new chat_ui();
     SystemTrayIcon::getInstance(QIcon(":/res/default_user_icon_withe_black.png"), nullptr);
     SystemTrayIcon::getInstance()->show();
     this->chat_ui_instance->show();
@@ -46,7 +47,11 @@ void mainwindow::display_chat_ui()
         }
         SystemTrayIcon::getInstance()->setIcon(QIcon(":/res/default_user_icon.png"));
         this->hide();
-            this->chat_ui_instance->show();
+        this->chat_ui_instance->ui->user_icon->setPixmap(
+            the_user_icon_mgr::getInstance()->get_user_icon(
+                QString::number(user_info_mgr::getInstance(QPixmap{},QString{}, QString{},
+                    std::uint64_t{})->get_user_id()), QString{}));
+        this->chat_ui_instance->show();
         qDebug() << "Chat UI displayed successfully";
     } catch (const std::exception& e) {
         qDebug() << "Error displaying chat UI:" << e.what();
@@ -79,7 +84,7 @@ mainwindow::~mainwindow() {
         }
         
         delete ui;
-    	this->chat_ui_instance = new chat_ui();
+        delete this->chat_ui_instance;
         qDebug() << "Mainwindow destroyed successfully";
     } catch (const std::exception& e) {
         qDebug() << "Error in mainwindow destructor:" << e.what();

@@ -29,7 +29,7 @@ public:
 public slots:
 	void on_pushButton_login_clicked();// 登录按钮点击事件
 	void do_when_login_mod_finish(ReqId req_id, QString res, ErrorCodes err);// 处理登录模块的HTTP响应
-	void do_when_the_account_input_done();// 账号输入完成后的处理
+	void do_when_the_account_input_done();// 账号输入完成后先设置默认头像;
 	QPixmap& get_user_icon() { return this->user_icon; }
 private:
     Ui::loginui *ui;
@@ -39,6 +39,7 @@ private:
     void init_handlers();
 	QMap<ReqId, std::function<void(const QJsonObject&)>>handlers; //处理函数map
     void set_the_wrong_tip(const QString& str);
+    void do_get_the_user_icon();
     QPixmap user_icon;
 };
 

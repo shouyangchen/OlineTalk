@@ -4,11 +4,7 @@ SerachEdit::SerachEdit(QWidget* parent):QLineEdit(parent)
 	connect(this, &QLineEdit::textChanged, this, &SerachEdit::limit_text_length);
 }
 
-void SerachEdit::focusOutEvent(QFocusEvent* event)
-{
-	QLineEdit::focusOutEvent(event);
-	emit sig_focus_out();
-}
+
 
 
 void SerachEdit::limit_text_length(QString text)
@@ -30,4 +26,16 @@ void SerachEdit::limit_text_length(QString text)
 void SerachEdit::set_max_length(int max_length)
 {
 	this->max_length = max_length;
+}
+
+void SerachEdit::focusInEvent(QFocusEvent* event)
+{
+	QLineEdit::focusInEvent(event);
+	emit sig_focus_in();
+}
+
+void SerachEdit::focusOutEvent(QFocusEvent* event)
+{
+	QLineEdit::focusOutEvent(event);
+	emit sig_focus_out();
 }

@@ -23,6 +23,7 @@ enum  ReqId:std::uint16_t{
 	ID_USER_LOGIN = 1003, //用户登录
 	ID_GET_VARIFY_CODE_FORGET_PASSWD = 1004, //获取忘记密码的验证码
 	ID_SUBMIT_FORGET_PASSWD = 1005, //忘记密码
+    ID_GET_USER_ICON=1006
 };
 
 // TCP消息ID枚举 (3000-3999)
@@ -45,7 +46,8 @@ enum  ErrorCodes:std::uint16_t{
 	EmailStlyeNotRight,//邮箱格式不正确
 	UserNameIsNull,//用户名为空
 	UserPasswdIsNull,//密码为空
-    TokenError = 1014
+    TokenError = 1014,
+    USER_ICON_NULL,
       /**
 	 * UserPasswdError 用户密码错误
 	 * EmailStlyeNotRight 邮箱格式不正确
@@ -82,10 +84,31 @@ enum ListItemType
     GROUP_TIP_ITEM,//分组提示条目
 
 };
+
 extern QMap<QString,QString> has_mistalk;
 
 struct server_info {//服务器信息结构体
 	QString host;//chat server 的ip
 	quint16 port;//chat server 的端口
 };
+
+enum ChatRole
+{
+    SELF,
+    OTHER
+};
+
+struct MsgInfo {
+    QString msgFlag;//"text,image,file"
+    QString content;//表示文件和图像的url,文本信息
+    QPixmap pixmap;//文件和图片的缩略图
+};
+
+
+inline bool adjust_is_email(QString&text)
+{
+   
+    QRegularExpression regex(R"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})");// 正则表达式匹配邮箱格式
+    return  regex.match(text).hasMatch();// 检查邮箱格式是否正确
+}
 #endif //GLOBAL_H

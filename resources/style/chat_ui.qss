@@ -14,6 +14,8 @@ QWidget#chat_side_bar {
     border: none;
 }
 
+
+
 /* 侧边栏图标样式 */
 #chat_side_bar QLabel {
     background-color: transparent;
@@ -28,10 +30,14 @@ QWidget#chat_side_bar {
     max-height: 40px;
 }
 
-#chat_side_bar QLabel:hover {
+/*#chat_side_bar QLabel:pressed {
     background-color: #4A5B6B;
     color: #FFFFFF;
-}
+}*/
+
+
+
+
 
 /* ========== 用户列表区域样式 ========== */
 QWidget#chat_user {

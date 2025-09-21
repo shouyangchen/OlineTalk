@@ -11,9 +11,11 @@ private:
 public:
 	SerachEdit(QWidget* parent=nullptr);
 	void set_max_length(int max_length);
-	signals:
+	signals:;
+		void sig_focus_in();
 		void sig_focus_out();
 protected:
+	void focusInEvent(QFocusEvent* event) override;
 	void focusOutEvent(QFocusEvent* event) override;
 };
 #endif

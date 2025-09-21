@@ -1,19 +1,21 @@
 #include "ClickedLabel.h"
+
 #include <QMouseEvent>
 
-
-ClickedLabel::ClickedLabel(QObject*parent) {
-	
+ClickedLabel::ClickedLabel(QWidget* parent) : QLabel(parent) 
+{
+    // 设置一些默认属性
+    this->setAlignment(Qt::AlignCenter);
+    this->setScaledContents(false);
 }
 
 ClickedLabel::~ClickedLabel()
 {
-
 }
 
 void ClickedLabel::mousePressEvent(QMouseEvent* event)
 {
-	if(event->button()==Qt::LeftButton)
+	if(event->button() == Qt::LeftButton)
 	{
 		if (this->rect().contains(event->pos()))
 		{
@@ -24,3 +26,4 @@ void ClickedLabel::mousePressEvent(QMouseEvent* event)
 	else
 		QLabel::mousePressEvent(event);
 }
+

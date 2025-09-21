@@ -14,8 +14,12 @@ class ChatPage : public QWidget
 public:
 	ChatPage(QWidget *parent = nullptr);
 	~ChatPage();
-
+public slots:
+	void on_send_btn_clicked();
+	//void on_emjo_lb_clicked();
+	//void on_file_lb_clicked();
 private:
 	Ui::ChatPageClass *ui;
+	void connect_sig();
 };
 

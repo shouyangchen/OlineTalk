@@ -1,0 +1,186 @@
+/* 
+ * ChatView 样式表
+ * 专为聊天视图组件设计的样式定义
+ */
+
+/* ========== ChatView 主体样式 ========== */
+ChatView {
+    background-color: #F8F9FA;
+    border: none;
+}
+
+/* ========== 聊天滚动区域样式 ========== */
+QScrollArea#chat_area {
+    background-color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* 聊天滚动区域的视口样式 */
+QScrollArea#chat_area > QWidget > QWidget {
+    background-color: #FFFFFF;
+}
+
+/* ========== 聊天背景样式 ========== */
+QWidget#chat_bg {
+    background-color: #FFFFFF;
+    border: none;
+    background-image: url(:/res/chat_bg.png); /* 如果有聊天背景图片 */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* 如果没有背景图片，使用纯色背景 */
+QWidget#chat_bg[noBgImage="true"] {
+    background-color: #FAFBFC;
+    background-image: none;
+}
+
+/* ========== 滚动条样式 ========== */
+/* 垂直滚动条 */
+QScrollArea#chat_area QScrollBar:vertical {
+    background-color: rgba(0, 0, 0, 0);
+    width: 8px;
+    border-radius: 4px;
+    margin: 0px;
+    border: none;
+}
+
+QScrollArea#chat_area QScrollBar::handle:vertical {
+    background-color: rgba(197, 208, 219, 0.8);
+    border-radius: 4px;
+    min-height: 20px;
+    margin: 0px;
+}
+
+QScrollArea#chat_area QScrollBar::handle:vertical:hover {
+    background-color: rgba(168, 184, 200, 0.9);
+}
+
+QScrollArea#chat_area QScrollBar::handle:vertical:pressed {
+    background-color: rgba(144, 164, 184, 1.0);
+}
+
+/* 滚动条按钮 */
+QScrollArea#chat_area QScrollBar::add-line:vertical,
+QScrollArea#chat_area QScrollBar::sub-line:vertical {
+    height: 0px;
+    width: 0px;
+    background: transparent;
+    border: none;
+}
+
+/* 滚动条页面区域 */
+QScrollArea#chat_area QScrollBar::add-page:vertical,
+QScrollArea#chat_area QScrollBar::sub-page:vertical {
+    background: transparent;
+    border: none;
+}
+
+/* 滚动条槽 */
+QScrollArea#chat_area QScrollBar::groove:vertical {
+    background: transparent;
+    border: none;
+}
+
+/* ========== 聊天消息项样式 ========== */
+/* 聊天消息的通用样式 */
+ChatView QWidget[messageType="bubble"] {
+    background-color: transparent;
+    border: none;
+    margin: 5px 10px;
+    padding: 0px;
+}
+
+/* 自己发送的消息气泡 */
+ChatView QWidget[messageType="bubble"][sender="self"] {
+    background-color: #5A6C7D;
+    border-radius: 12px;
+    color: #FFFFFF;
+    padding: 8px 12px;
+    margin-left: 50px;
+    margin-right: 15px;
+}
+
+/* 他人发送的消息气泡 */
+ChatView QWidget[messageType="bubble"][sender="other"] {
+    background-color: #E8EDF3;
+    border-radius: 12px;
+    color: #2C3E50;
+    padding: 8px 12px;
+    margin-left: 15px;
+    margin-right: 50px;
+}
+
+/* 系统消息样式 */
+ChatView QWidget[messageType="system"] {
+    background-color: rgba(139, 157, 195, 0.2);
+    border-radius: 8px;
+    color: #8B9DC3;
+    padding: 6px 12px;
+    margin: 10px 30px;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 时间戳样式 */
+ChatView QLabel[labelType="timestamp"] {
+    color: #8B9DC3;
+    font-size: 11px;
+    margin: 5px 0px 2px 0px;
+    text-align: center;
+}
+
+/* 用户名样式 */
+ChatView QLabel[labelType="username"] {
+    color: #5A6C7D;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 2px 0px;
+}
+
+/* ========== 特殊状态样式 ========== */
+/* 消息发送中状态 */
+ChatView QWidget[messageState="sending"] {
+    opacity: 0.7;
+}
+
+/* 消息发送失败状态 */
+ChatView QWidget[messageState="failed"] {
+    border-left: 3px solid #E74C3C;
+}
+
+/* 消息已读状态 */
+ChatView QWidget[messageState="read"] {
+    /* 可以添加已读标识样式 */
+}
+
+/* ========== 动画效果 ========== */
+/* 滚动条出现/消失的过渡效果 */
+QScrollArea#chat_area QScrollBar:vertical {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 消息气泡的悬停效果 */
+ChatView QWidget[messageType="bubble"]:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* ========== 响应式设计 ========== */
+/* 小屏幕适配 */
+ChatView[screenSize="small"] QWidget[messageType="bubble"] {
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 13px;
+}
+
+/* 大屏幕适配 */
+ChatView[screenSize="large"] QWidget[messageType="bubble"] {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 15px;
+}
