@@ -70,7 +70,7 @@
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QLabel" name="user_icon">
+          <widget class="ClickedLabel" name="user_icon">
            <property name="minimumSize">
             <size>
              <width>45</width>
@@ -249,7 +249,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="serach_list">
+       <widget class="SearchList" name="serach_list">
         <property name="autoFillBackground">
          <bool>false</bool>
         </property>
@@ -262,7 +262,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ChatUserList" name="chat_user_list"/>
+       <widget class="RecentChatUsersList" name="chat_user_list"/>
       </item>
       <item>
        <widget class="QListWidget" name="connect_user_list"/>
@@ -295,11 +295,6 @@
    <header location="global">SerachEdit.h</header>
   </customwidget>
   <customwidget>
-   <class>ChatUserList</class>
-   <extends>QListWidget</extends>
-   <header location="global">ChatUserList.h</header>
-  </customwidget>
-  <customwidget>
    <class>ChatPage</class>
    <extends>QWidget</extends>
    <header location="global">chatpage.h</header>
@@ -310,6 +305,21 @@
    <extends>QWidget</extends>
    <header location="global">StateWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ClickedLabel</class>
+   <extends>QLabel</extends>
+   <header location="global">ClickedLabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SearchList</class>
+   <extends>QListWidget</extends>
+   <header location="global">serach_list.h</header>
+  </customwidget>
+  <customwidget>
+   <class>RecentChatUsersList</class>
+   <extends>QListView</extends>
+   <header location="global">RecentChatUsersList.h</header>
   </customwidget>
  </customwidgets>
  <resources>

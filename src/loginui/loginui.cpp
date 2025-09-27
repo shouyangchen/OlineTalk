@@ -118,28 +118,8 @@ void loginui::init_handlers()
         auto uid = obj["uid"].toInt();
         auto token = obj["token"].toString();
         auto host = obj["host"].toString();
-<<<<<<< HEAD
 
     	auto user_info = user_info_mgr::getInstance(QPixmap{}, QString{this->ui->lineEdit_username->text()}, QString{}, uid);
-=======
-        QString user_icon_str = obj["user_icon"].toString();
-        QByteArray user_icon_data;
-        if (user_icon_str == "NULL") {
-            user_icon_data.clear(); // 没有头像
-        } else {
-            user_icon_data = obj["user_icon"].toVariant().toByteArray(); // 直接获取二进制数据
-        }
-        QPixmap user_icon = QPixmap(user_icon_data);
-        if (!user_icon.isNull())
-        {
-            auto user_info = user_info_mgr::getInstance(user_icon, QString{}, QString{}, uid);
-            qDebug() << "get user_icon sussce!";
-        }
-        else
-        {
-            auto user_info = user_info_mgr::getInstance(QPixmap{}, QString{}, QString{}, uid);
-        }
->>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
         // 处理端口 - 可能是字符串也可能是数字
         auto portValue = obj["port"];
         int port = 0;

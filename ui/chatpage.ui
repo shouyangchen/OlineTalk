@@ -85,7 +85,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ChatView" name="chat_view" native="true"/>
+       <widget class="New_ChatView" name="chat_view" native="true"/>
       </item>
       <item>
        <widget class="QWidget" name="tool_widget" native="true">
@@ -287,6 +287,75 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="MultiSelectionHistoryWidget" name="MultiSelectionHistoryWidget_widget" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>20</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="ClickedLabel" name="label_delete_history">
+              <property name="text">
+               <string>删除</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ClickedLabel" name="label_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ClickedLabel" name="label_cancel">
+              <property name="text">
+               <string>取消</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -378,15 +447,21 @@
    <header location="global">clickedlabel.h</header>
   </customwidget>
   <customwidget>
-   <class>ChatView</class>
-   <extends>QWidget</extends>
-   <header location="global">chatview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>MessageTextEdit</class>
    <extends>QTextEdit</extends>
    <header location="global">MessageTextEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>New_ChatView</class>
+   <extends>QWidget</extends>
+   <header>new_chat_view.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MultiSelectionHistoryWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">MultiSelectionHistoryWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

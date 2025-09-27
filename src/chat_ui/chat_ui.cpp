@@ -1,12 +1,10 @@
 #include "chat_ui.h"
 #include <QCloseEvent>
 #include <QApplication>
-#include <QMouseEvent>
 #include <QTimer>
 #include "ui_chat_ui.h"
 #include "SystemTrayIcon.h"
 #include <QDebug>
-#include <QAction>
 #include <QMovie>
 #include <QFile>
 
@@ -16,6 +14,8 @@
 #include "the_user_icon_mgr.h"
 #include "user_info_mgr.h"
 #include "StyleManager.h"
+#include "RecentChatUsersList.h"
+#include "RecentChatUsersListModel.h"
 
 chat_ui::chat_ui(QWidget* parent)
     :QWidget(parent),mode(CHAT_UI_MODE::ChatMode),state(CHAT_UI_MODE::ChatMode),is_loading(false)
@@ -53,13 +53,14 @@ chat_ui::chat_ui(QWidget* parent)
                 this->ui->serach_edit->clearFocus();//清除焦点
                 this->show_serach(false);
             });
-
+        this->init_add_user_item();
         this->ui->serach_edit->addAction(serach_clear_action, QLineEdit::TrailingPosition);
 		this->show_serach(false);//初始状态不显示搜索
         this->setWindowIcon(QIcon(":/res/default_user_icon.png"));
         this->connect_sig();
         this->set_qss();
         this->add_user_list();
+        this->installEventFilter(this);//设置事件过滤器
 		this->ui->serach_edit->setFocusPolicy(Qt::ClickFocus);//设置为点击才获得焦点
         this->ui->user_icon->setPixmap(QPixmap(":/res/default_user_icon.png").scaled(40,40,Qt::KeepAspectRatio, Qt::SmoothTransformation));
         this->ui->talk_view->increment_message_count();
@@ -68,9 +69,26 @@ chat_ui::chat_ui(QWidget* parent)
 		this->ui->talk_view->setObjectName("talk_view");
 		this->ui->about_view->setToolTip("设置");
 		this->ui->talk_view->setToolTip("消息");
-        this->ui->serach_list->addItem(new QListWidgetItem());
-		this->ui->serach_list->setItemWidget(this->ui->serach_list->item(0), new add_user_item());
         this->show_serach(false);
+
+        // ---- Seed RecentChatListModel test data (visible) ----
+        if (auto recentList = this->findChild<RecentChatUsersList*>()) {
+            if (auto model = qobject_cast<RecentChatListModel*>(recentList->model())) {
+                struct Seed { QString id; QString name; QString msg; int unread; };
+                const QList<Seed> seeds = {
+                    {"u_1001","小王","你好, 今天见面吗?",2},
+                    {"u_1002","小李","项目进度已经更新。",0},
+                    {"u_1003","小赵","晚点一起游戏?",5},
+                    {"u_1004","小陈","收到文件了, 谢谢!",1}
+                };
+                for (const auto &s : seeds) {
+                    model->upsert_user(s.id, s.name, ":/res/head_3.jpg", s.msg, s.unread);
+                }
+                qDebug() << "Seeded recent chat list rows:" << model->rowCount();
+            }
+        }
+        // -------------------------------------------
+
         // 调试输出
         qDebug() << "chat_ui setup completed successfully";
     }
@@ -84,43 +102,11 @@ chat_ui::chat_ui(QWidget* parent)
     }
 }
 
-std::vector<QString>msg={
-	"今天天气真好！",
-	"你最近在忙什么？",
-	"周末有空一起出去玩吧！",
-	"你喜欢看电影吗？",
-	"工作压力大吗？",
-	"最近有什么好书推荐吗？",
-	"你喜欢什么类型的音乐？",
-	"假期打算去哪里旅游？",
-	"你喜欢运动吗？",
-	"最近有什么有趣的事情发生吗？"
-};
-
-std::vector<QString>head={
-	":/res/head_1.jpg",
-	":/res/head_2.jpg",
-	":/res/head_3.jpg",
-	":/res/head_4.jpg",
-	":/res/head_5.jpg",
-};
-
-
-std::vector<QString>names={
-	"小王",
-	"小李",
-	"小郑",
-	"小赵",
-	"小刘",
-	"小陈",
-	"小杨",
-	"小孙",
-};
 void chat_ui::connect_sig()
 {
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[EXIT_APP], &QAction::triggered, this, &chat_ui::when_touch_close);
     connect(SystemTrayIcon::getInstance()->TrayIcon_Actions[OPEN_CHAT_UI], &QAction::triggered, this, &chat_ui::show);
-    connect(this->ui->chat_user_list, &ChatUserList::sig_loading_chat_user, this, &chat_ui::slot_loading_the_user_list);
+    //connect(this->ui->chat_user_list, &ChatUserList::sig_loading_chat_user, this, &chat_ui::slot_loading_the_user_list);
     connect(this->ui->serach_edit, &SerachEdit::sig_focus_in, [this]()
         {
             //当获得焦点的时候显示搜索的QListWidget
@@ -136,14 +122,6 @@ void chat_ui::connect_sig()
         {
 			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("chat_view"));
 			this->show_serach(false);
-        });
-    connect(this->ui->serach_edit, &SerachEdit::sig_focus_out, [this]
-        {
-			if (this->ui->serach_list->count() == 1)//只有一个添加好友的item没有其他搜索结果时
-            {
-				this->show_serach(false);
-            }
-			return;//当失去焦点的时候如果没有搜索结果则隐藏搜索的QListWidget否者保持显示
         });
 }
 
@@ -164,19 +142,7 @@ void chat_ui::closeEvent(QCloseEvent* event)
 
 void chat_ui::add_user_list()
 {
-	for (int i=0;i<13;i++)
-	{
-        int random_value = QRandomGenerator::global()->bounded(100);//生成99之间的随机数
-		int str_i = random_value % msg.size();
-		int head_i = random_value % head.size();
-        int name_i = random_value % names.size();
-        Chat_User_Display* item = new Chat_User_Display();
-        item->set_info(names[name_i], head[head_i], msg[str_i]);
-        QListWidgetItem* listItem = new QListWidgetItem();
-        listItem->setSizeHint(item->sizeHint());
-        this->ui->chat_user_list->addItem(listItem);
-		this->ui->chat_user_list->setItemWidget(listItem, item);
-	}
+
 }
 
 
@@ -293,6 +259,34 @@ void chat_ui::show_serach(bool is_serach)
         this->ui->connect_user_list->show();
         this->mode = CHAT_UI_MODE::ConnectMode;
     }
+}
+
+
+void chat_ui::init_add_user_item()
+{
+
+}
+
+bool chat_ui::eventFilter(QObject* watched, QEvent* event)
+{
+	if (watched==this&&event->type()==QEvent::MouseButtonPress)
+	{
+        auto mouse_press_event = static_cast<QMouseEvent*>(event);
+		if (this->mode==CHAT_UI_MODE::SerachMode)//如果搜索列表显示
+          {
+              QPoint pos_in_serach_list = this->ui->serach_list->mapFromGlobal(mouse_press_event->globalPos());
+              if (!this->ui->serach_list->rect().contains(pos_in_serach_list))
+              {
+                  this->ui->serach_edit->clear();
+                  this->ui->serach_edit->clearFocus();
+                  this->show_serach(false);
+                  return QWidget::eventFilter(watched, event);
+              }
+          }
+		else
+            return QWidget::eventFilter(watched, event);
+	}
+    return QWidget::eventFilter(watched, event);
 }
 
 

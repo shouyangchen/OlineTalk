@@ -1,88 +1,79 @@
-﻿#include "MessageTextEdit.h"
+#include "MessageTextEdit.h"
 #include <QDebug>
 #include <QMessageBox>
 
-
-MessageTextEdit::MessageTextEdit(QWidget *parent)
+MessageTextEdit::MessageTextEdit(QWidget* parent)
     : QTextEdit(parent)
 {
-
-    //this->setStyleSheet("border: none;");
     this->setMaximumHeight(60);
-
-//    connect(this,SIGNAL(textChanged()),this,SLOT(textEditChanged()));
-
+    // connect(this, SIGNAL(textChanged()), this, SLOT(textEditChanged()));
 }
 
-MessageTextEdit::~MessageTextEdit()
-{
+MessageTextEdit::~MessageTextEdit() {}
 
-}
-
-QVector<MsgInfo> MessageTextEdit::getMsgList()
+QList<ChatMessage> MessageTextEdit::getMsgList()
 {
     mGetMsgList.clear();
 
-    QString doc = this->document()->toPlainText();
-    QString text="";//存储文本信息
+    QString docText = this->document()->toPlainText();
+    QString currText;
     int indexUrl = 0;
     int count = mMsgList.size();
 
-    for(int index=0; index<doc.size(); index++)
+    for (int i = 0; i < docText.size(); ++i)
     {
-        if(doc[index]==QChar::ObjectReplacementCharacter)
+        if (docText[i] == QChar::ObjectReplacementCharacter)
         {
-            if(!text.isEmpty())
+            if (!currText.isEmpty())
             {
-                QPixmap pix;
-                insertMsgList(mGetMsgList,"text",text,pix);
-                text.clear();
+                insertChatMessage(mGetMsgList, "text", currText, QPixmap());
+                currText.clear();
             }
-            while(indexUrl<count)
+            while (indexUrl < count)
             {
-                MsgInfo msg =  mMsgList[indexUrl];
-                if(this->document()->toHtml().contains(msg.content,Qt::CaseSensitive))
+                const ChatMessage& msg = mMsgList[indexUrl];
+                // 对于图片或文件，message_context是url或路径
+                if (this->document()->toHtml().contains(msg.message_context.toString(), Qt::CaseSensitive))
                 {
-                    indexUrl++;
+                    ++indexUrl;
                     mGetMsgList.append(msg);
                     break;
                 }
-                indexUrl++;
+                ++indexUrl;
             }
         }
         else
         {
-            text.append(doc[index]);
+            currText.append(docText[i]);
         }
     }
-    if(!text.isEmpty())
+    if (!currText.isEmpty())
     {
-        QPixmap pix;
-        insertMsgList(mGetMsgList,"text",text,pix);
-        text.clear();
+        insertChatMessage(mGetMsgList, "text", currText, QPixmap());
+        currText.clear();
     }
     mMsgList.clear();
     this->clear();
-    return mGetMsgList;
+    return mGetMsgList.toList();
 }
 
-void MessageTextEdit::dragEnterEvent(QDragEnterEvent *event)
+void MessageTextEdit::dragEnterEvent(QDragEnterEvent* event)
 {
-    if(event->source()==this)
+    if (event->source() == this)
         event->ignore();
     else
         event->accept();
 }
 
-void MessageTextEdit::dropEvent(QDropEvent *event)
+void MessageTextEdit::dropEvent(QDropEvent* event)
 {
     insertFromMimeData(event->mimeData());
     event->accept();
 }
 
-void MessageTextEdit::keyPressEvent(QKeyEvent *e)
+void MessageTextEdit::keyPressEvent(QKeyEvent* e)
 {
-    if((e->key()==Qt::Key_Enter||e->key()==Qt::Key_Return)&& !(e->modifiers() & Qt::ShiftModifier))
+    if ((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) && !(e->modifiers() & Qt::ShiftModifier))
     {
         emit send();
         return;
@@ -90,179 +81,166 @@ void MessageTextEdit::keyPressEvent(QKeyEvent *e)
     QTextEdit::keyPressEvent(e);
 }
 
-void MessageTextEdit::insertFileFromUrl(const QStringList &urls)
+void MessageTextEdit::insertFileFromUrl(const QStringList& urls)
 {
-    if(urls.isEmpty())
+    if (urls.isEmpty())
         return;
 
-    foreach (QString url, urls){
-         if(isImage(url))
-             insertImages(url);
-         else
-             insertTextFile(url);
+    for (const QString& url : urls)
+    {
+        if (isImage(url))
+            insertImages(url);
+        else
+            insertTextFile(url);
     }
 }
 
-void MessageTextEdit::insertImages(const QString &url)
+void MessageTextEdit::insertImages(const QString& url)
 {
     QImage image(url);
-    //按比例缩放图片
-    if(image.width()>120||image.height()>80)
+    if (image.width() > 120 || image.height() > 80)
     {
-        if(image.width()>image.height())
-        {
-          image =  image.scaledToWidth(120,Qt::SmoothTransformation);
-        }
+        if (image.width() > image.height())
+            image = image.scaledToWidth(120, Qt::SmoothTransformation);
         else
-            image = image.scaledToHeight(80,Qt::SmoothTransformation);
+            image = image.scaledToHeight(80, Qt::SmoothTransformation);
     }
     QTextCursor cursor = this->textCursor();
-    // QTextDocument *document = this->document();
-    // document->addResource(QTextDocument::ImageResource, QUrl(url), QVariant(image));
-    cursor.insertImage(image,url);
+    cursor.insertImage(image, url);
 
-    insertMsgList(mMsgList,"image",url,QPixmap::fromImage(image));
+    insertChatMessage(mMsgList, "image", url, QPixmap::fromImage(image));
 }
 
-void MessageTextEdit::insertTextFile(const QString &url)
+void MessageTextEdit::insertTextFile(const QString& url)
 {
     QFileInfo fileInfo(url);
-    if(fileInfo.isDir())
+    if (fileInfo.isDir())
     {
-        QMessageBox::information(this,"提示","只允许拖拽单个文件!");
+        QMessageBox::information(this, "提示", "只允许拖拽单个文件!");
         return;
     }
 
-    if(fileInfo.size()>100*1024*1024)
+    if (fileInfo.size() > 100 * 1024 * 1024)
     {
-        QMessageBox::information(this,"提示","发送的文件大小不能大于100M");
+        QMessageBox::information(this, "提示", "发送的文件大小不能大于100M");
         return;
     }
 
     QPixmap pix = getFileIconPixmap(url);
     QTextCursor cursor = this->textCursor();
-    cursor.insertImage(pix.toImage(),url);
-    insertMsgList(mMsgList,"file",url,pix);
+    cursor.insertImage(pix.toImage(), url);
+    insertChatMessage(mMsgList, "file", url, pix);
 }
 
-bool MessageTextEdit::canInsertFromMimeData(const QMimeData *source) const
+bool MessageTextEdit::canInsertFromMimeData(const QMimeData* source) const
 {
     return QTextEdit::canInsertFromMimeData(source);
 }
 
-void MessageTextEdit::insertFromMimeData(const QMimeData *source)
+void MessageTextEdit::insertFromMimeData(const QMimeData* source)
 {
-    QStringList urls = getUrl(source->text());
-
-    if(urls.isEmpty())
+    QStringList urls = extractUrlsFromText(source->text());
+    if (urls.isEmpty())
         return;
 
-    foreach (QString url, urls)
+    for (const QString& url : urls)
     {
-         if(isImage(url))
-             insertImages(url);
-         else
-             insertTextFile(url);
+        if (isImage(url))
+            insertImages(url);
+        else
+            insertTextFile(url);
     }
 }
 
-bool MessageTextEdit::isImage(QString url)
+bool MessageTextEdit::isImage(const QString& url) const
 {
-    QString imageFormat = "bmp,jpg,png,tif,gif,pcx,tga,exif,fpx,svg,psd,cdr,pcd,dxf,ufo,eps,ai,raw,wmf,webp";
-    QStringList imageFormatList = imageFormat.split(",");
+    static const QStringList imageFormatList = QString("bmp,jpg,png,tif,gif,pcx,tga,exif,fpx,svg,psd,cdr,pcd,dxf,ufo,eps,ai,raw,wmf,webp").split(",");
     QFileInfo fileInfo(url);
     QString suffix = fileInfo.suffix();
-    if(imageFormatList.contains(suffix,Qt::CaseInsensitive)){
-        return true;
-    }
-    return false;
+    return imageFormatList.contains(suffix, Qt::CaseInsensitive);
 }
 
-void MessageTextEdit::insertMsgList(QVector<MsgInfo> &list, QString flag, QString text, QPixmap pix)
+void MessageTextEdit::insertChatMessage(QVector<ChatMessage>& list, const QString& type, const QVariant& context, const QPixmap& pix)
 {
-    MsgInfo msg;
-    msg.msgFlag=flag;
-    msg.content = text;
+    ChatMessage msg;
+    msg.message_type = type;
+    msg.message_context = context;
     msg.pixmap = pix;
+    msg.timestamp = QDateTime::currentDateTime();
+    //msg.sender = "SELF"; // 这里默认发消息的是自己
     list.append(msg);
 }
 
-QStringList MessageTextEdit::getUrl(QString text)
+QStringList MessageTextEdit::extractUrlsFromText(const QString& text) const
 {
     QStringList urls;
-    if(text.isEmpty()) return urls;
+    if (text.isEmpty()) return urls;
 
     QStringList list = text.split("\n");
-    foreach (QString url, list) {
-        if(!url.isEmpty()){
+    for (const QString& url : list)
+    {
+        if (!url.isEmpty())
+        {
             QStringList str = url.split("///");
-            if(str.size()>=2)
+            if (str.size() >= 2)
                 urls.append(str.at(1));
         }
     }
     return urls;
 }
 
-QPixmap MessageTextEdit::getFileIconPixmap(const QString &url)
+QPixmap MessageTextEdit::getFileIconPixmap(const QString& url) const
 {
-    QFileIconProvider provder;
+    QFileIconProvider provider;
     QFileInfo fileinfo(url);
-    QIcon icon = provder.icon(fileinfo);
+    QIcon icon = provider.icon(fileinfo);
 
     QString strFileSize = getFileSize(fileinfo.size());
-    //qDebug() << "FileSize=" << fileinfo.size();
-
-    QFont font(QString("宋体"),10,QFont::Normal,false);
+    QFont font(QString("宋体"), 10, QFont::Normal, false);
     QFontMetrics fontMetrics(font);
     QSize textSize = fontMetrics.size(Qt::TextSingleLine, fileinfo.fileName());
-
-    QSize FileSize = fontMetrics.size(Qt::TextSingleLine, strFileSize);
-    int maxWidth = textSize.width() > FileSize.width() ? textSize.width() :FileSize.width();
+    QSize fileSize = fontMetrics.size(Qt::TextSingleLine, strFileSize);
+    int maxWidth = qMax(textSize.width(), fileSize.width());
     QPixmap pix(50 + maxWidth + 10, 50);
     pix.fill();
 
     QPainter painter;
-   // painter.setRenderHint(QPainter::Antialiasing, true);
-    //painter.setFont(font);
     painter.begin(&pix);
-    // 文件图标
     QRect rect(0, 0, 50, 50);
-    painter.drawPixmap(rect, icon.pixmap(40,40));
+    painter.drawPixmap(rect, icon.pixmap(40, 40));
     painter.setPen(Qt::black);
-    // 文件名称
-    QRect rectText(50+10, 3, textSize.width(), textSize.height());
+    QRect rectText(50 + 10, 3, textSize.width(), textSize.height());
     painter.drawText(rectText, fileinfo.fileName());
-    // 文件大小
-    QRect rectFile(50+10, textSize.height()+5, FileSize.width(), FileSize.height());
+    QRect rectFile(50 + 10, textSize.height() + 5, fileSize.width(), fileSize.height());
     painter.drawText(rectFile, strFileSize);
     painter.end();
     return pix;
 }
 
-QString MessageTextEdit::getFileSize(qint64 size)
+QString MessageTextEdit::getFileSize(qint64 size) const
 {
     QString Unit;
     double num;
-    if(size < 1024){
+    if (size < 1024) {
         num = size;
         Unit = "B";
     }
-    else if(size < 1024 * 1224){
+    else if (size < 1024 * 1024) {
         num = size / 1024.0;
         Unit = "KB";
     }
-    else if(size <  1024 * 1024 * 1024){
+    else if (size < 1024 * 1024 * 1024) {
         num = size / 1024.0 / 1024.0;
         Unit = "MB";
     }
-    else{
-        num = size / 1024.0 / 1024.0/ 1024.0;
+    else {
+        num = size / 1024.0 / 1024.0 / 1024.0;
         Unit = "GB";
     }
-    return QString::number(num,'f',2) + " " + Unit;
+    return QString::number(num, 'f', 2) + " " + Unit;
 }
 
 void MessageTextEdit::textEditChanged()
 {
-    //qDebug() << "text changed!" << endl;
+    // 可扩展：文本变化时处理逻辑
 }

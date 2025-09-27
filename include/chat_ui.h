@@ -42,12 +42,14 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void closeEvent(QCloseEvent* event) override;// 在 chat_ui.h 的 protected 部分添加：
+    bool eventFilter(QObject* watched, QEvent* event) override;
 private:
     Ui::chat_ui *ui;
     void show_serach(bool is_serach);
     CHAT_UI_MODE mode;//模式
     CHAT_UI_MODE state;//状态
     void init_the_hash_of_stack_widget();
+    void init_add_user_item();
 };
 
 #endif // CHAT_UI_H

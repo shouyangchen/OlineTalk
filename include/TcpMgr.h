@@ -6,8 +6,11 @@
 #include "global.h"
 #include <QAbstractSocket>
 #include <QTcpSocket>
+
+#include "user_info_mgr.h"
+
 class TcpMgr :public QObject,
-    public singleton<TcpMgr>
+              public singleton<TcpMgr>
 {
     Q_OBJECT
 private:
@@ -37,6 +40,7 @@ signals:
     void sig_swtich_chat_dialog();
     void sig_load_apply_list(QJsonArray json_array);
     void sig_login_failed(int);
+	void sig_user_serach(std::shared_ptr<SearchInfo> user_info);
 public slots:
     void send_data(Message_id message_id_id, QString const & message);
     void connect_to_server(server_info server);

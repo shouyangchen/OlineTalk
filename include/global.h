@@ -6,6 +6,7 @@
 #define GLOBAL_H
 #include <functional>
 #include <QSettings>
+#include <QDateTime>
 #include <QWidget>
 #include <QStyle>
 #include <QRegularExpression>
@@ -32,7 +33,8 @@ enum Message_id:qint16
 	LOGIN_MESSAGE=3001,              // 登录消息
     SEND_MESSAGE_HANDLER = 3002,     // 发送消息处理
     HEARTBEAT_PACKET = 3003,         // 心跳包
-    ID_CHAT_LOGIN_RSP=3004           // 用户登录响应
+    ID_CHAT_LOGIN_RSP=3004,           // 用户登录响应
+	SEARCH_USER             // 搜索用户
 };
 
 enum  ErrorCodes:std::uint16_t{
@@ -64,7 +66,8 @@ enum  Modules:std::uint16_t{
     MODULE_GROUP=6, //群组模块
     MODULE_FILE_TRANSFER=7, //文件传输模块
     MODULE_NOTIFICATION=8, //通知模块
-	MODULE_FORGET_PASSWD = 9//忘记密码模块
+	MODULE_FORGET_PASSWD = 9,//忘记密码模块
+	MODULE_USER_SEARCH = 10//用户搜索模块
 };
 
 enum the_gif_order:std::uint16_t
@@ -78,6 +81,7 @@ enum ListItemType
 {
 	CHAT_USER_ITEM,//聊天用户
     CONNECT_USER_ITEM,//联系人用户
+    ADD_USER_ITEM,//添加用户
     SERACH_USER_ITEM,//搜索到的用户
     ADD_USER_TIP_ITEM,//提示添加用户
     INVALID_ITEM,//不可点击的条目
@@ -98,12 +102,11 @@ enum ChatRole
     OTHER
 };
 
-struct MsgInfo {
-    QString msgFlag;//"text,image,file"
-    QString content;//表示文件和图像的url,文本信息
-    QPixmap pixmap;//文件和图片的缩略图
-};
-<<<<<<< HEAD
+//struct MsgInfo {
+//    QString msgFlag;//"text,image,file"
+//    QString content;//表示文件和图像的url,文本信息
+//    QPixmap pixmap;//文件和图片的缩略图
+//};
 
 
 inline bool adjust_is_email(QString&text)
@@ -112,6 +115,13 @@ inline bool adjust_is_email(QString&text)
     QRegularExpression regex(R"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})");// 正则表达式匹配邮箱格式
     return  regex.match(text).hasMatch();// 检查邮箱格式是否正确
 }
-=======
->>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
+
+struct ChatMessage
+{
+    QVariant message_context;
+	QDateTime timestamp;
+    QString message_type;
+	QString sender;//消息发送者SELF or OTHER
+    QPixmap pixmap;
+};
 #endif //GLOBAL_H

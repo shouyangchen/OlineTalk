@@ -3,12 +3,10 @@
 
 #include "chatitembase.h"
 #include "global.h"
-#include "PictureBubble.h"
 #include "StyleManager.h"
-#include "TextBubble.h"
 
 ChatPage::ChatPage(QWidget *parent)
-	: QWidget(parent)
+	: QWidget(parent),now_uid("12345")
 	, ui(new Ui::ChatPageClass())
 {
 	ui->setupUi(this);
@@ -57,48 +55,55 @@ ChatPage::ChatPage(QWidget *parent)
 	ui->emjo_lb->setCursor(Qt::PointingHandCursor);
 	ui->file_lb->setCursor(Qt::PointingHandCursor);
 	this->connect_sig();
+	this->ui->MultiSelectionHistoryWidget_widget->setVisible(false);
 }
 
 
 void ChatPage::connect_sig()
 {
 	connect(this->ui->QP_send, &QPushButton::clicked, this, &ChatPage::on_send_btn_clicked);
+	connect(this->ui->QP_recived, &QPushButton::clicked, this, &ChatPage::on_received_clicked);
+	connect(this->ui->label_cancel, &ClickedLabel::Clicked, [this]
+		{
+			this->ui->textEdit->setVisible(true);
+			this->ui->tool_widget->setVisible(true);
+			this->ui->QP_recived->setVisible(true);
+			this->ui->QP_send->setVisible(true);
+			this->ui->MultiSelectionHistoryWidget_widget->setVisible(false);
+			this->ui->chat_view->chatHistoryView->clearSelection();
+			this->ui->chat_view->chatHistoryView->setSelectionMode(QAbstractItemView::NoSelection);
+		});
 }
 
 void ChatPage::on_send_btn_clicked()
 {
-	// 发送按钮点击事件
+	//// 发送按钮点击事件
 	auto text_edit = this->ui->textEdit;
-	ChatRole role = ChatRole::SELF;
-	QString user_name = QStringLiteral("陈守阳");
-	QString user_icon = ":/res/head_1.png";
-	const QVector<MsgInfo>& msg_list = text_edit->getMsgList();
-	for (int i=0;i<msg_list.size();++i)
+	ChatMessage message;
+	message.sender = "SELF";
+	const QVector<ChatMessage>& msg_list = text_edit->getMsgList();
+	auto model = dynamic_cast<ChatHistoryDataModel*>(this->ui->chat_view->get_model());
+	for (auto& item : msg_list)
 	{
-		QString type = msg_list[i].msgFlag;
-		ChatItemBase* item = new ChatItemBase(role);
-		item->set_user_name(user_name);
-		item->set_user_icon(QPixmap(user_icon));
-		QWidget* Bubble = nullptr;
-		if (type=="text")
-		{
-			Bubble = new TextBubble(role, msg_list[i].content);
-			qDebug() << msg_list[i].content;
-		}
-		else if (type == "image")
-		{
-			Bubble = new PictureBubble(QPixmap(msg_list[i].content), role);
-			qDebug() << msg_list[i].content;
-		}
-		else if (type == "file")
-		{
-		}
-		if (Bubble != nullptr)
-		{
-			item->set_widget(Bubble);
-			this->ui->chat_view->append_item(item);
-		}
+		const_cast<ChatMessage&>(item).sender = "SELF";
+		emit model->sig_send_the_message(item, "12345");
 	}
+		//...网络逻辑
+	
+}
+
+void ChatPage::on_received_clicked()
+{
+	//// 发送按钮点击事件
+	auto text_edit = this->ui->textEdit;
+	ChatMessage message;
+	message.sender = "OTHER";
+	const QVector<ChatMessage>& msg_list = text_edit->getMsgList();
+	auto model = dynamic_cast<ChatHistoryDataModel*>(this->ui->chat_view->get_model());
+	for (auto& item : msg_list)
+		emit model->sig_send_the_message(item, "12345");
+	//...网络逻辑
+
 }
 
 
