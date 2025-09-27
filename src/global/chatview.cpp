@@ -34,6 +34,7 @@ ChatView::ChatView(QWidget*parent)
 	this->p_scroll_area->setObjectName("chat_area");
 	p_main_layout->addWidget(p_scroll_area);
 	
+<<<<<<< HEAD
 	QWidget* w = new QWidget(this);//聊天背景
 	w->setObjectName("chat_bg");
 	w->setAutoFillBackground(true);//自动填充
@@ -41,6 +42,15 @@ ChatView::ChatView(QWidget*parent)
 	QVBoxLayout* box_layout = new QVBoxLayout();
 	box_layout->addWidget(new QWidget(), 10000);//创建一个新的垂直布局并且添加一个widget进入让其填充满整个布局
 	w->setLayout(box_layout);//将聊天背景的布局设置为垂直布局
+=======
+	QWidget* w = new QWidget(this);
+	w->setObjectName("chat_bg");
+	w->setAutoFillBackground(true);//自动填充
+	
+	QVBoxLayout* p_Hlayout = new QVBoxLayout();
+	p_Hlayout->addWidget(new QWidget(), 10000);//创建一个新的垂直布局并且添加一个widget进入让其填充满整个布局
+	w->setLayout(p_Hlayout);//将聊天背景的布局设置为垂直布局
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	this->p_scroll_area->setWidget(w);//将聊天背景添加进入scroll_area里因为聊天背景我们设置为了自动填充那么scroll_area的就会被char_bg自动填充满自动位置其大小为父窗口的大小
 
 	p_scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -51,10 +61,17 @@ ChatView::ChatView(QWidget*parent)
 	QHBoxLayout* h_layout2 = new QHBoxLayout();
 	h_layout2->addWidget(pVscrollBar, 0, Qt::AlignRight);
 	h_layout2->setContentsMargins(0,0,0,0);
+<<<<<<< HEAD
 	this->p_scroll_area->setLayout(h_layout2);//将竖直滚动条设置到侧边的水平布局
 	pVscrollBar->setHidden(true);//QScorllArea的垂直滚动条隐蔽掉因为侧边的水平布局有了一个
 
 	p_scroll_area->setWidgetResizable(true);//将自适应设置为true为了隐藏滚动条
+=======
+	this->p_scroll_area->setLayout(h_layout2);
+	pVscrollBar->setHidden(true);
+
+	p_scroll_area->setWidgetResizable(true);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	p_scroll_area->installEventFilter(this);
 	
 	qDebug() << "ChatView initialized with stylesheet support";
@@ -69,11 +86,19 @@ void ChatView::append_item(QWidget* item)
 
 QWidget* ChatView::create_message_bubble(const QString& message, const QString& sender, const QString& timestamp)
 {
+<<<<<<< HEAD
 	QWidget* messageWidget = new QWidget();//创建一个widget用于将返回给外部调用注意该widget是没有父对象的，即内存没有被管理
 	messageWidget->setProperty("messageType", "bubble");//设置对象的元信息
 	messageWidget->setProperty("sender", sender);
 	
 	QVBoxLayout* layout = new QVBoxLayout(messageWidget);//创建一个垂直布局在widget里
+=======
+	QWidget* messageWidget = new QWidget();
+	messageWidget->setProperty("messageType", "bubble");
+	messageWidget->setProperty("sender", sender);
+	
+	QVBoxLayout* layout = new QVBoxLayout(messageWidget);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(2);
 	
@@ -86,25 +111,42 @@ QWidget* ChatView::create_message_bubble(const QString& message, const QString& 
 	}
 	
 	// 消息内容布局
+<<<<<<< HEAD
 	QHBoxLayout* messageLayout = new QHBoxLayout();//创建消息的水平布局
+=======
+	QHBoxLayout* messageLayout = new QHBoxLayout();
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	
 	if (sender == "self") {
 		messageLayout->addStretch(); // 右对齐
 	}
 	
 	// 消息气泡
+<<<<<<< HEAD
 	QLabel* bubbleLabel = new QLabel(message);//创建一个label将信息写入label
 	bubbleLabel->setWordWrap(true);//启动自动换行，原理根据内容的像素点判断是否超过label的固定宽度
 	bubbleLabel->setMaximumWidth(300);
 	bubbleLabel->setMinimumWidth(50);
 	
 	messageLayout->addWidget(bubbleLabel);//将信息显示label加入消息显示垂直布局
+=======
+	QLabel* bubbleLabel = new QLabel(message);
+	bubbleLabel->setWordWrap(true);
+	bubbleLabel->setMaximumWidth(300);
+	bubbleLabel->setMinimumWidth(50);
+	
+	messageLayout->addWidget(bubbleLabel);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	
 	if (sender == "other") {
 		messageLayout->addStretch(); // 左对齐
 	}
 	
+<<<<<<< HEAD
 	layout->addLayout(messageLayout);//将消息的水平布局填入整体垂直布局
+=======
+	layout->addLayout(messageLayout);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	
 	return messageWidget;
 }

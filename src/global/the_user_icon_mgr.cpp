@@ -138,21 +138,34 @@ QPixmap the_user_icon_mgr::get_user_icon(QString user_id, QString user_email)
 	}
 }
 
+<<<<<<< HEAD
 void the_user_icon_mgr::set_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon)// 设置用户头像同时更新本地的头像数据库
+=======
+void the_user_icon_mgr::set_user_icon(QString& user_id, QPixmap& user_icon)// 设置用户头像同时更新本地的头像数据库
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 {
 	QByteArray byteArray;
 	QDataStream stream(&byteArray, QIODevice::WriteOnly);
 	stream << user_icon; // 将QPixmap转换为字节数组
 
 	std::lock_guard<std::mutex> lock(icon_mutex); // 加锁以确保线程安全
+<<<<<<< HEAD
 	this->query.prepare("REPLACE INTO user_icons (user_id, user_email, icon) VALUES (:id, :email, :pix)");
 	this->query.bindValue(":id", user_id);
 	this->query.bindValue(":email", user_email);
+=======
+	this->query.prepare("REPLACE INTO user_icons (user_id, icon) VALUES (:id, :pix)");
+	this->query.bindValue(":id", user_id);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	this->query.bindValue(":pix", byteArray);
 	if (!this->query.exec()) {
 		qDebug() << "Failed to insert/update user icon:" << this->query.lastError().text();
 	} else {
 		qDebug() << "User icon inserted/updated successfully.";
+<<<<<<< HEAD
 		emit sig_notify_the_icon_frame(user_icon);
+=======
+		emit user_icon_changed(user_id, user_icon);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 	}
 }

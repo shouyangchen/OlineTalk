@@ -36,7 +36,11 @@ void BubbleFrame::paintEvent(QPaintEvent* event)
 	if (this->role_m==ChatRole::OTHER)
 	{
 		//画气泡
+<<<<<<< HEAD
 		QColor bk_color(242, 243, 244);
+=======
+		QColor bk_color(Qt::white);
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 		painter.setBrush(QBrush(bk_color));
 		QRect bk_rect = QRect(WIDTH_SANJIAO, 0, this->width() - WIDTH_SANJIAO, this->height());
 		painter.drawRoundedRect(bk_rect, 5, 5);

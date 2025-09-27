@@ -103,6 +103,7 @@ struct MsgInfo {
     QString content;//表示文件和图像的url,文本信息
     QPixmap pixmap;//文件和图片的缩略图
 };
+<<<<<<< HEAD
 
 
 inline bool adjust_is_email(QString&text)
@@ -111,4 +112,6 @@ inline bool adjust_is_email(QString&text)
     QRegularExpression regex(R"([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})");// 正则表达式匹配邮箱格式
     return  regex.match(text).hasMatch();// 检查邮箱格式是否正确
 }
+=======
+>>>>>>> 784920c682c11f872a4f6f362076919e7000b57a
 #endif //GLOBAL_H
