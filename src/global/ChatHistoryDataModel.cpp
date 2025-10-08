@@ -46,6 +46,11 @@ QVariant ChatHistoryDataModel::data(const QModelIndex& index, int role) const
 	{
 		return message.sender;//SELF or OTHER
 	}
+
+	else if (role==Qt::UserRole+4)
+	{
+		return this->user_icon;
+	}
 	return QVariant();
 }
 
@@ -104,6 +109,14 @@ void ChatHistoryDataModel::loading_chat_history(const QString& uid)
 		this->appendMessages(message_list);
 }
 
+void ChatHistoryDataModel::loading_chat_history()
+{
+	if (this->user_id.isEmpty())
+		return;
+	this->loading_chat_history(this->user_id);
+}
+
+
 
 void ChatHistoryDataModel::loading_befor_chat_history(const QString& uid)
 {
@@ -112,4 +125,11 @@ void ChatHistoryDataModel::loading_befor_chat_history(const QString& uid)
 	auto message_list = HistoryDB_Mgr::getInstance()->get_more_earlier_history(uid, earliestTimestamp, 20);
 	if (!message_list.isEmpty())
 		this->insertMessages(0, message_list);
+}
+
+void ChatHistoryDataModel::loading_befor_chat_history()
+{
+	if (this->user_id.isEmpty())
+		return;
+	this->loading_befor_chat_history(this->user_id);
 }

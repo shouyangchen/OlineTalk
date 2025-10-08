@@ -3,13 +3,12 @@
 #include <QTextOption>
 #include <QStaticText>
 #include <QStyleOptionViewItem>
+
+#include "ChatHistoryDataModel.h"
 #include "user_info_mgr.h"
 
 ChatHistoryDisplayDelegate::ChatHistoryDisplayDelegate(QObject* parent):QStyledItemDelegate(parent)
 {
-    this->sender_user_icon = the_user_icon_mgr::getInstance()->get_user_icon(
-        QString::number(user_info_mgr::getInstance(QPixmap{}, QString{}, QString{},
-            std::uint64_t{})->get_user_id()), QString{});
     this->my_icon = the_user_icon_mgr::getInstance()->get_user_icon(
         QString::number(user_info_mgr::getInstance(QPixmap{}, QString{}, QString{},
             std::uint64_t{})->get_user_id()), QString{});
@@ -47,7 +46,7 @@ void ChatHistoryDisplayDelegate::paint(QPainter* painter, const QStyleOptionView
     }
     else {
         // 左侧头像
-        avatar = this->sender_user_icon;
+        avatar=index.data(Qt::UserRole + 4).value<QPixmap>();
         avatar_rect = QRect(rect.left() + padding, rect.top() + padding, avatar_size, avatar_size);
         bubble_rect = QRect(avatar_rect.right() + padding,
             rect.top() + padding,
@@ -143,7 +142,7 @@ QSize ChatHistoryDisplayDelegate::sizeHint(const QStyleOptionViewItem& option, c
 
 void ChatHistoryDisplayDelegate::slot_replace_the_user_icon(const QPixmap& icon)
 {
-		this->sender_user_icon = icon;
+		
 }
 
 QSize ChatHistoryDisplayDelegate::calculate_text_widget_size(QString const& text) const

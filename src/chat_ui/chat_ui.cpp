@@ -81,8 +81,11 @@ chat_ui::chat_ui(QWidget* parent)
                     {"u_1003","小赵","晚点一起游戏?",5},
                     {"u_1004","小陈","收到文件了, 谢谢!",1}
                 };
+                //随机头像
                 for (const auto &s : seeds) {
-                    model->upsert_user(s.id, s.name, ":/res/head_3.jpg", s.msg, s.unread);
+                    int the_head_icon_num = QRandomGenerator().bounded(1, 6);//生成1到5之间的随机数
+					QString head_icon_path = QString(":/res/head_%1.jpg").arg(the_head_icon_num);
+                    model->upsert_user(s.id, s.name,head_icon_path , s.msg, s.unread);
                 }
                 qDebug() << "Seeded recent chat list rows:" << model->rowCount();
             }
@@ -123,6 +126,26 @@ void chat_ui::connect_sig()
 			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("chat_view"));
 			this->show_serach(false);
         });
+    connect(this->ui->chat_user_list, &RecentChatUsersList::doubleClicked, [this](const QModelIndex& index)
+        {
+			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("chat_view"));//切换到聊天页面
+			auto user_name = index.data(RecentChatListModel::UserNameRole).toString();//获取用户名
+			auto user_id = index.data(RecentChatListModel::UserIdRole).toString();//获取用户id
+            this->state = CHAT_UI_MODE::ChatMode;
+            this->show_serach(false);
+			//设置聊天页面的标题
+			auto widget = dynamic_cast<ChatPage*>(this->ui->stackedWidget->currentWidget());//获取当前的聊天页面
+			widget->ui->title_lb->setText(user_name);//设置标题
+			auto chat_history_view = dynamic_cast<ChatHistoryView*>(widget->ui->chat_view->get_view());//获取聊天记录视图
+			auto model = dynamic_cast<RecentChatListModel*>(this->ui->chat_user_list->model());//获取聊天用户列表的模型
+			model->get_model_from_cache(user_id)->set_display_view(chat_history_view);//设置聊天记录视图
+			model->get_model_from_cache(user_id)->setUserId(index.data(RecentChatListModel::UserIdRole).value<QString>());//设置用户id
+			QPixmap user_icon = index.data(RecentChatListModel::UserAvatarRole).value<QPixmap>();//获取用户头像
+            model->get_model_from_cache(user_id)->setUserIcon(user_icon);
+			if (model)//设置聊天记录视图的模型
+                chat_history_view->setModel(model->get_model_from_cache(user_id));
+			chat_history_view->scrollToBottom();//滚动到最底部
+			});
 }
 
 void chat_ui::closeEvent(QCloseEvent* event)

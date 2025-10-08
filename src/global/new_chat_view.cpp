@@ -29,7 +29,7 @@ void New_ChatView::set_chat_history_view()
 	this->chatHistoryView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);//设置垂直滚动模式为逐像素滚动
 	this->chatHistoryView->setResizeMode(QListView::Adjust);//调整视图大小
 	this->chatHistoryView->setStyleSheet("QListView::item:selected, QListView::item:hover { background: transparent; }");
-	this->chatHistoryView->setSpacing(6);
+	this->chatHistoryView->setSpacing(8);
 	auto model = this->chatHistoryView->model();
 	this->chatHistoryView->setSelectionModel(ChatHistoryItemSelectionModel::getInstance(model).get());
 	this->chatHistoryView->setSelectionRectVisible(true);

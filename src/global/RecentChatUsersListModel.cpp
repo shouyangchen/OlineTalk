@@ -88,6 +88,7 @@ void RecentChatListModel::slot_user_selected(QString const& user_id)
 	increase_chat_weight(user_id);
 	add_the_model_cache(user_id);
 	qDebug() << "User selected, increased weight and ensured cache for user_id:" << user_id;
+	
 }
 
 void RecentChatListModel::add_the_model_cache(QString const& user_id)

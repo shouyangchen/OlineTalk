@@ -10,7 +10,6 @@ class ChatHistoryDisplayDelegate :public QStyledItemDelegate
 {
 	Q_OBJECT
 private:
-	QPixmap sender_user_icon;//用于绘制用户头像的cache
 	QPixmap my_icon;
 	QSize calculate_text_widget_size(QString const& text)const;
 	QSize calculate_image_widget_size(QByteArray const& image_data)const;

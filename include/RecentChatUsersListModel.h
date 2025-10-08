@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QCache>
 #include <QString>
+#include <QPixmapCache>
 #include "ChatHistoryDataModel.h"
 
 class RecentChatListModel;
@@ -69,7 +70,7 @@ private:
     QString data_dir; // 数据持久化目录（非 UI 线程也可安全使用）
 public:
     enum Roles {
-		UserIdRole = Qt::UserRole + 4,// 从Qt::UserRole+4开始自定义角色,因为前面已经被使用
+		UserIdRole = Qt::UserRole + 5,// 从Qt::UserRole+4开始自定义角色,因为前面已经被使用
         UserNameRole,
         UserAvatarRole,
         LastMessageRole,

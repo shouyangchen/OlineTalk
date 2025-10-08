@@ -31,7 +31,7 @@ bool ChatHistoryView::eventFilter(QObject* watched, QEvent* event)
 		{
 			if (this->model()->rowCount()==0)
 			{
-				dynamic_cast<ChatHistoryDataModel*>(this->model())->loading_chat_history(this->user_id);
+				dynamic_cast<ChatHistoryDataModel*>(this->model())->loading_chat_history();
 				return  QListView::eventFilter(watched, event);
 			}
 			// 判断是否到最上方
@@ -39,7 +39,7 @@ bool ChatHistoryView::eventFilter(QObject* watched, QEvent* event)
 			{
 				// 此处可以加载更多历史消息
 				auto model = this->model();
-				dynamic_cast<ChatHistoryDataModel*>(model)->loading_befor_chat_history("12345");
+				dynamic_cast<ChatHistoryDataModel*>(model)->loading_befor_chat_history();
 				QTimer::singleShot(500, this, [this]() { this->need_loading = true; });
 			}
 		}

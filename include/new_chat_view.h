@@ -18,6 +18,7 @@ public:
 	New_ChatView(QWidget* parent = nullptr);
 	~New_ChatView()override = default;
 	QAbstractItemModel* get_model();
+	QListView* get_view() { return this->chatHistoryView; }
 protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 };

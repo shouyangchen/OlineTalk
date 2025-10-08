@@ -83,12 +83,12 @@ void ChatPage::on_send_btn_clicked()
 	message.sender = "SELF";
 	const QVector<ChatMessage>& msg_list = text_edit->getMsgList();
 	auto model = dynamic_cast<ChatHistoryDataModel*>(this->ui->chat_view->get_model());
+	auto user_id = model->getUserID();
 	for (auto& item : msg_list)
 	{
 		const_cast<ChatMessage&>(item).sender = "SELF";
-		emit model->sig_send_the_message(item, "12345");
+		emit model->sig_send_the_message(item, user_id);
 	}
-		//...网络逻辑
 	
 }
 
@@ -100,8 +100,9 @@ void ChatPage::on_received_clicked()
 	message.sender = "OTHER";
 	const QVector<ChatMessage>& msg_list = text_edit->getMsgList();
 	auto model = dynamic_cast<ChatHistoryDataModel*>(this->ui->chat_view->get_model());
+	auto user_id = model->getUserID();
 	for (auto& item : msg_list)
-		emit model->sig_send_the_message(item, "12345");
+		emit model->sig_send_the_message(item, user_id);
 	//...网络逻辑
 
 }

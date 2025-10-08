@@ -14,6 +14,7 @@ class ChatPage : public QWidget
 private:
 	friend class ChatHistoryView;
 	friend class New_ChatView;
+	friend class chat_ui;
 public:
 	ChatPage(QWidget *parent = nullptr);
 	~ChatPage()override;
