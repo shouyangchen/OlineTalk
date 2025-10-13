@@ -2,12 +2,13 @@
 #include <QCloseEvent>
 #include <QApplication>
 #include <QTimer>
+#include <QOverload>
 #include "ui_chat_ui.h"
 #include "SystemTrayIcon.h"
 #include <QDebug>
 #include <QMovie>
 #include <QFile>
-
+#include  "ConnectUserListDisplayDelegate.h"
 #include "add_user_item.h"
 #include "chat_user_display.h"
 #include "loadinguserwidget.h"
@@ -53,46 +54,54 @@ chat_ui::chat_ui(QWidget* parent)
                 this->ui->serach_edit->clearFocus();//清除焦点
                 this->show_serach(false);
             });
-        this->init_add_user_item();
+        this->ui->new_friends_frame->setFrameStyle(~(this->ui->new_friends_frame->frameStyle()));
+		this->ui->new_friends_frame->setVisible(false);//初始状态不显示新的好友申请控件
         this->ui->serach_edit->addAction(serach_clear_action, QLineEdit::TrailingPosition);
 		this->show_serach(false);//初始状态不显示搜索
         this->setWindowIcon(QIcon(":/res/default_user_icon.png"));
         this->connect_sig();
         this->set_qss();
-        this->add_user_list();
         this->installEventFilter(this);//设置事件过滤器
 		this->ui->serach_edit->setFocusPolicy(Qt::ClickFocus);//设置为点击才获得焦点
         this->ui->user_icon->setPixmap(QPixmap(":/res/default_user_icon.png").scaled(40,40,Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        this->ui->talk_view->increment_message_count();
         this->ui->about_view->setPixmap(QPixmap(":/res/settings_press.png").scaled(40, 40, Qt::KeepAspectRatio,Qt::SmoothTransformation));
         this->ui->about_view->setObjectName("about_view");
 		this->ui->talk_view->setObjectName("talk_view");
+        this->ui->connect_users->setPixmap(QPixmap(":/res/contact_list_press.png").scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 		this->ui->about_view->setToolTip("设置");
 		this->ui->talk_view->setToolTip("消息");
-        this->show_serach(false);
-
-        // ---- Seed RecentChatListModel test data (visible) ----
-        if (auto recentList = this->findChild<RecentChatUsersList*>()) {
-            if (auto model = qobject_cast<RecentChatListModel*>(recentList->model())) {
-                struct Seed { QString id; QString name; QString msg; int unread; };
-                const QList<Seed> seeds = {
-                    {"u_1001","小王","你好, 今天见面吗?",2},
-                    {"u_1002","小李","项目进度已经更新。",0},
-                    {"u_1003","小赵","晚点一起游戏?",5},
-                    {"u_1004","小陈","收到文件了, 谢谢!",1}
-                };
-                //随机头像
-                for (const auto &s : seeds) {
-                    int the_head_icon_num = QRandomGenerator().bounded(1, 6);//生成1到5之间的随机数
-					QString head_icon_path = QString(":/res/head_%1.jpg").arg(the_head_icon_num);
-                    model->upsert_user(s.id, s.name,head_icon_path , s.msg, s.unread);
-                }
-                qDebug() << "Seeded recent chat list rows:" << model->rowCount();
-            }
+        
+        // 先创建模型
+        auto connectModel = new ConnectUserListModel();
+        this->ui->connect_user_list->setModel(connectModel);
+        this->ui->connect_user_list->setItemDelegate(new ConnectUserListDisplayDelegate());
+        
+        auto recentChatModel = new RecentChatListModel(this);
+        this->ui->chat_user_list->setModel(recentChatModel);
+        // 建立信号连接
+        connect(recentChatModel, &RecentChatListModel::sig_request_users_name, 
+                connectModel, &ConnectUserListModel::slot_get_users_name);
+        connect(connectModel, &ConnectUserListModel::sig_connect_users_name_loading_done, 
+                recentChatModel, &RecentChatListModel::slot_the_recent_user_name_loading_done);
+        connect(connectModel, &ConnectUserListModel::sig_connect_user_name_changed, 
+                recentChatModel, &RecentChatListModel::slot_the_user_name_changed);
+        
+        // 关键：当ConnectUserListModel数据准备好后，通知RecentChatListModel请求用户名
+        connect(connectModel, &ConnectUserListModel::userListUpdated, 
+                recentChatModel, &RecentChatListModel::loading_users_name);
+        
+        // 其他连接保持不变...
+        
+        recentChatModel->loading_user_icon_f();
+        connect(this->ui->chat_user_list, &RecentChatUsersList::user_selected, 
+                recentChatModel, &RecentChatListModel::slot_user_selected);
+        auto message_label = this->ui->chat_side_bar->findChild<DisplayMessageNumsLabel*>("state_widget_message_icon_label");
+        if (message_label) {
+            connect(message_label, &DisplayMessageNumsLabel::sig_clear_all_unread_message, 
+                    recentChatModel, &RecentChatListModel::slot_clear_all_unread_message);
+            connect(recentChatModel, &RecentChatListModel::totalUnreadMessageCountChanged, 
+                    message_label, &DisplayMessageNumsLabel::set_message_nums);
         }
-        // -------------------------------------------
-
-        // 调试输出
         qDebug() << "chat_ui setup completed successfully";
     }
     catch (const std::exception& e) {
@@ -118,6 +127,7 @@ void chat_ui::connect_sig()
     connect(this->ui->about_view->display_the_message_icon_label_m, &ClickedLabel::Clicked, [this]
         {
 			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("about_view"));
+			this->ui->new_friends_frame->setVisible(false);//隐藏新的好友申请控件
 			this->show_serach(false);
 
         });
@@ -125,6 +135,8 @@ void chat_ui::connect_sig()
         {
 			this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("chat_view"));
 			this->show_serach(false);
+            this->ui->chat_user_list->setVisible(true);
+            this->ui->new_friends_frame->setVisible(false);//隐藏新的好友申请控件
         });
     connect(this->ui->chat_user_list, &RecentChatUsersList::doubleClicked, [this](const QModelIndex& index)
         {
@@ -139,13 +151,30 @@ void chat_ui::connect_sig()
 			auto chat_history_view = dynamic_cast<ChatHistoryView*>(widget->ui->chat_view->get_view());//获取聊天记录视图
 			auto model = dynamic_cast<RecentChatListModel*>(this->ui->chat_user_list->model());//获取聊天用户列表的模型
 			model->get_model_from_cache(user_id)->set_display_view(chat_history_view);//设置聊天记录视图
+            model->clear_the_unread_message_count(index);
 			model->get_model_from_cache(user_id)->setUserId(index.data(RecentChatListModel::UserIdRole).value<QString>());//设置用户id
 			QPixmap user_icon = index.data(RecentChatListModel::UserAvatarRole).value<QPixmap>();//获取用户头像
             model->get_model_from_cache(user_id)->setUserIcon(user_icon);
 			if (model)//设置聊天记录视图的模型
                 chat_history_view->setModel(model->get_model_from_cache(user_id));
+            model->get_model_from_cache(user_id)->loading_chat_history();
 			chat_history_view->scrollToBottom();//滚动到最底部
 			});
+    connect(this->ui->connect_users->display_the_message_icon_label_m, &ClickedLabel::Clicked, [this]
+        {
+			this->ui->new_friends_frame->setVisible(true);//显示新的好友申请控件
+            this->ui->connect_user_list->setVisible(true);
+            this->ui->chat_user_list->setVisible(false);
+        });
+    using no_value_clicked_sig_ptr = void (ClickedFrame::*)();
+    no_value_clicked_sig_ptr sig_ptr = &ClickedFrame::sig_clicked;
+
+    connect(this->ui->new_friends_frame,sig_ptr, [this]
+        {
+    		this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("new_friend_applications_widget"));
+			qDebug() << "New friend applications clicked";
+        });
+
 }
 
 void chat_ui::closeEvent(QCloseEvent* event)
@@ -176,6 +205,8 @@ void chat_ui::init_the_hash_of_stack_widget()
     the_stack_widget_index->insert("setting_view", 1);
     the_stack_widget_index->insert("connect_view", 2);
     the_stack_widget_index->insert("about_view", 3);
+	the_stack_widget_index->insert("new_friend_applications_widget", 4);
+	the_stack_widget_index->insert("null_widget", 5);
 
 }
 
@@ -202,7 +233,7 @@ chat_ui::~chat_ui()
         qDebug() << "chat_ui destroyed successfully";
     }
     catch (const std::exception& e) {
-        qDebug() << "Error in chat_ui destructor:" << e.what();
+        qDebug() << "Error in chat_ui destructor:" <<e.what();
     }
     catch (...) {
         qDebug() << "Unknown error in chat_ui destructor";

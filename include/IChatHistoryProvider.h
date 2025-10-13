@@ -19,7 +19,7 @@ public:
     // 获取总数
     virtual int getHistoryCount(const QString& userId) = 0;
 
-	virtual QList<QString> getUserIdFromDataBase() = 0;
+	virtual QList<QString> getUserIdFromDataBase() = 0;// 获取所有有聊天记录的用户ID列表
 };
 
 

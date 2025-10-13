@@ -124,4 +124,76 @@ struct ChatMessage
 	QString sender;//消息发送者SELF or OTHER
     QPixmap pixmap;
 };
+
+
+class RecentChatListModel;
+
+class the_connected_user_info
+{
+private:
+    friend RecentChatListModel;
+    QString user_id;
+    QString user_name;
+    QPixmap user_avatar;// 头像
+    QString last_message;// 最后一条消息
+    QDateTime last_message_time;// 最后消息时间
+    int unread_message_count{ 0 };
+
+public:
+    the_connected_user_info() = default;
+    the_connected_user_info(QString const& id, QString const& name, QPixmap const& avatar);
+    const QString& get_user_id() const;
+    const QString& get_user_name() const;
+    QPixmap get_user_avatar() const;
+    const QString& get_last_message() const;
+    const QDateTime& get_last_message_time() const;
+    int get_unread_message_count() const;
+    void set_user_name(QString const& name);
+    void set_user_avatar(QPixmap const& avatar);
+    void set_last_message(QString const& message);
+    void set_last_message_time(QDateTime const& time);
+    void set_unread_message_count(int count);
+    void set_user_id(QString const& uid);
+    void increment_unread_message_count();
+    void clear_unread_message_count();
+
+};
+
+namespace connectUserList
+{
+    struct user_info
+    {
+        QString username;
+        QString user_id;
+        QPixmap avatar;
+
+        // 默认构造函数
+        user_info() = default;
+
+        // 方便构造函数
+        user_info(const QString& id, const QString& name, const QPixmap& pic = QPixmap())
+            : username(name), user_id(id), avatar(pic) {
+        }
+    };
+}
+
+
+
+namespace NewFriendApplicationlNS
+{
+    struct user_application
+    {
+        QString username;
+        QPixmap avatar;
+        QString msg;
+        QDateTime time;
+        QString user_id;
+		int status; // 0:未处理, 1:已同意, 2:已拒绝
+        user_application() = default;
+        user_application(const QString& name, const QPixmap& pic, const QString& m, const QDateTime& t,const QString &id, int s = 0)
+            : username(name), avatar(pic), msg(m), time(t),user_id(id), status(s) {
+		}
+    };
+}
+
 #endif //GLOBAL_H

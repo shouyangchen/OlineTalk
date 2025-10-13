@@ -1,8 +1,10 @@
 #include "the_user_icon_mgr.h"
+QString user_icon_database_path;
 the_user_icon_mgr::the_user_icon_mgr()
 {
 	QString App_Path = QApplication::applicationDirPath();//获取应用程序路径
 	QString db_path = App_Path + "/user_icon_db/user_icon.db";
+	user_icon_database_path = db_path;
 	if (!QDir(App_Path + "/user_icon_db").exists()) {// 检查目录是否存在
 		QDir().mkdir(App_Path + "/user_icon_db");
 		if (!QFile::exists(App_Path))
@@ -138,6 +140,99 @@ QPixmap the_user_icon_mgr::get_user_icon(QString user_id, QString user_email)
 	}
 }
 
+void the_user_icon_mgr::get_applications_user_icon_async(const QList<QString> user_list)
+{
+	disconnect(&this->future_watcher_applications_icon, &QFutureWatcher<QPixmap>::finished, nullptr, nullptr);
+
+	connect(&this->future_watcher_applications_icon, &QFutureWatcher<QPixmap>::finished, [this]() {
+		this->icon_list.clear();
+		auto future = this->future_watcher_applications_icon.future();
+		for (int i = 0; i < future.resultCount(); ++i) {
+			this->icon_list.append(future.resultAt(i));
+		}
+		emit sig_applications_user_icon_loading_done(this->icon_list);// 全部申请头像加载完成后发出信号
+		});
+	this->future_watcher_applications_icon.setFuture(this->loading_user_icon(user_list));// 启动异步任务
+}
+
+
+void the_user_icon_mgr::get_user_icon_async(const QList<QString> user_list)// 异步获取用户头像
+{
+	//if (!user_list.isEmpty())
+	//{
+	//	qDebug() << "user list is empty";
+	//	return;
+	//}
+	// 断开之前的连接以防止重复触发
+	disconnect(&this->future_watcher, &QFutureWatcher<QPixmap>::finished, nullptr, nullptr);
+
+	connect(&this->future_watcher, &QFutureWatcher<QPixmap>::finished, [this]() {
+		this->icon_list.clear();
+		auto future = this->future_watcher.future();
+		for (int i = 0; i < future.resultCount(); ++i) {
+			this->icon_list.append(future.resultAt(i));
+		}
+		emit sig_notify_the_user_icon_loading_done(this->icon_list);// 全部头像加载完成后发出信号
+		});
+	this->future_watcher.setFuture(this->loading_user_icon(user_list));// 启动异步任务
+}
+
+
+QFuture<std::pair<QPixmap, QString>> the_user_icon_mgr::loading_user_icon(const QList<QString> user_ids)
+{
+	// 使用 QtConcurrent::mapped 批量异步获取头像
+	return QtConcurrent::mapped(user_ids, [](const QString& id)->std::pair<QPixmap, QString> {
+		// 为每个线程创建唯一的数据库连接名
+		QString connectionName = QString("UserIconDB_%1").arg(reinterpret_cast<quintptr>(QThread::currentThread()));
+
+		QSqlDatabase db;
+		if (QSqlDatabase::contains(connectionName)) {
+			db = QSqlDatabase::database(connectionName);
+		}
+		else {
+			db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+			db.setDatabaseName(user_icon_database_path);
+		}
+
+		if (!db.open()) {
+			qDebug() << "Failed to open database in async task:" << db.lastError().text();
+			return std::make_pair(QPixmap(":/res/default_user_icon.png"), id);
+		}
+
+		QSqlQuery query(db);
+		query.prepare("SELECT icon FROM user_icons WHERE user_id=:id");
+		query.bindValue(":id", id);
+
+		if (!query.exec()) {
+			qDebug() << "Failed to execute query for user_id" << id << ":" << query.lastError().text();
+			return std::make_pair(QPixmap(":/res/default_user_icon.png"), id);
+		}
+
+		if (!query.next()) {
+			qDebug() << "No icon found for user_id:" << id;
+			return std::make_pair(QPixmap(":/res/default_user_icon.png"), id);
+		}
+
+		auto result = query.value(0);
+		if (result.isNull()) {
+			qDebug() << "No icon data for user_id:" << id;
+			return std::make_pair(QPixmap(":/res/default_user_icon.png"), id);
+		}
+
+		// 修正：从BLOB数据正确读取QPixmap
+		QByteArray byteArray = result.toByteArray();
+		QDataStream stream(&byteArray, QIODevice::ReadOnly);
+		QPixmap icon;
+		stream >> icon;
+
+		if (icon.isNull()) {
+			icon.load(":/res/default_user_icon.png");
+		}
+
+		return std::make_pair(icon, id);
+		});
+}
+
 void the_user_icon_mgr::set_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon)// 设置用户头像同时更新本地的头像数据库
 {
 	QByteArray byteArray;
@@ -155,4 +250,17 @@ void the_user_icon_mgr::set_user_icon(const QString& user_id, const QString& use
 		qDebug() << "User icon inserted/updated successfully.";
 		emit sig_notify_the_icon_frame(user_icon);
 	}
+}
+
+void the_user_icon_mgr::slot_get_user_icon_async(const QList<QString> user_list)
+{
+	this->get_user_icon_async(user_list);
+}
+
+
+
+
+void the_user_icon_mgr::slot_get_applications_user_icon_async(const QList<QString> user_list)
+{
+	this->get_applications_user_icon_async(user_list);
 }

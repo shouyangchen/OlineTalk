@@ -1,6 +1,7 @@
 #include "find_success_widget.h"
 #include "the_user_icon_mgr.h"
 #include <QPointer>
+
 find_success_widget::find_success_widget(QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::find_success_widgetClass())
@@ -15,6 +16,7 @@ find_success_widget::find_success_widget(QWidget *parent)
 		{
 			emit this->will_close();
 		});
+	connect(this->ui->add_friend_button, &QPushButton::clicked, this, &find_success_widget::on_the_add_friend_clicked);
 }
 
 
@@ -28,6 +30,10 @@ void find_success_widget::set_serach_info(std::shared_ptr<SearchInfo> si)
 void find_success_widget::on_the_add_friend_clicked()
 {
 	qDebug() <<u8"添加好友界面被触发！";
+	emit this->will_close();
+	add_friend_widget* afw = new add_friend_widget();
+	afw->set_search_info(this->search_info_m);
+	afw->show();
 }
 
 

@@ -105,7 +105,7 @@
           </widget>
          </item>
          <item>
-          <widget class="StateWidget" name="setting_view" native="true">
+          <widget class="StateWidget" name="connect_users" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -265,7 +265,41 @@
        <widget class="RecentChatUsersList" name="chat_user_list"/>
       </item>
       <item>
-       <widget class="QListWidget" name="connect_user_list"/>
+       <widget class="ClickedFrame" name="new_friends_frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>50</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>新的朋友</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="ConnectUserListView" name="connect_user_list"/>
       </item>
      </layout>
     </widget>
@@ -273,12 +307,14 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>5</number>
      </property>
      <widget class="ChatPage" name="chat_page"/>
      <widget class="QWidget" name="setting_page"/>
      <widget class="QWidget" name="freind_page"/>
      <widget class="QWidget" name="about_page"/>
+     <widget class="NewAddFriendApplicationWidget" name="new_friend_applications_widget"/>
+     <widget class="QWidget" name="null_widget"/>
     </widget>
    </item>
   </layout>
@@ -320,6 +356,23 @@
    <class>RecentChatUsersList</class>
    <extends>QListView</extends>
    <header location="global">RecentChatUsersList.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectUserListView</class>
+   <extends>QListView</extends>
+   <header location="global">ConnectUserListView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ClickedFrame</class>
+   <extends>QFrame</extends>
+   <header location="global">ClickedFrame.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NewAddFriendApplicationWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">NewAddFriendApplicationWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

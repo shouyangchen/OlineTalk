@@ -5,9 +5,7 @@
 RecentChatUsersList::RecentChatUsersList(QWidget* parent)
 	: QListView(parent)
 {
-	auto model= new RecentChatListModel(this);
 	setItemDelegate(new RecentChatUsersListDelegate(this));
-	setModel(model);
 	setSelectionMode(QAbstractItemView::SingleSelection);
 	setEditTriggers(QAbstractItemView::NoEditTriggers);
 	setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -19,5 +17,5 @@ RecentChatUsersList::RecentChatUsersList(QWidget* parent)
 		QString user_id = index.data(RecentChatListModel::UserIdRole).toString();
 		emit user_selected(user_id);
 	});
-	connect(this, &RecentChatUsersList::user_selected, model, &RecentChatListModel::slot_user_selected);
+
 }
