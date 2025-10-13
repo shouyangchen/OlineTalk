@@ -11,7 +11,7 @@ StateWidget::StateWidget(QWidget* parent)
 {
     // 创建两个独立的label
     this->display_the_message_icon_label_m = new DisplayMessageNumsLabel(this);
-
+	this->display_the_message_icon_label_m->setObjectName("state_widget_message_icon_label");
     QHBoxLayout* h_box_layout = new QHBoxLayout();
     h_box_layout->setContentsMargins(0, 0, 0, 0);
     h_box_layout->setAlignment(Qt::AlignCenter);
@@ -51,6 +51,7 @@ void StateWidget::clear_message_count()
 void StateWidget::set_message_count(unsigned char count)
 {
     this->the_message_count_m.store(count, std::memory_order_release);
+	this->display_the_message_icon_label_m->set_message_nums(count);
 }
 
 void StateWidget::setPixmap(const QPixmap& pixmap)

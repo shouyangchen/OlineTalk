@@ -38,11 +38,6 @@ void DisplayMessageNumsLabel::clear_message_nums()
 void DisplayMessageNumsLabel::set_message_nums(unsigned char count)
 {
 	this->the_message_nums_m.store(count, std::memory_order_release);
-	if (count > 0) {
-		this->setVisible(true);
-	} else {
-		this->setVisible(false);
-	}
 	this->update();
 }
 
@@ -107,6 +102,7 @@ void DisplayMessageNumsLabel::mouseMoveEvent(QMouseEvent* event)
 		drag->setPixmap(pixmap);
 		drag->setHotSpot(QPoint(pixmap.width() / 2, pixmap.height() / 2));
 		drag->exec(Qt::IgnoreAction);
+		emit this->sig_clear_all_unread_message();
 	}
 }
 

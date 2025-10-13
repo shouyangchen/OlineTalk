@@ -131,7 +131,7 @@
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="add_friend_button">
         <property name="minimumSize">
          <size>
           <width>120</width>

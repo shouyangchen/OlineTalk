@@ -105,7 +105,7 @@
           </widget>
          </item>
          <item>
-          <widget class="StateWidget" name="setting_view" native="true">
+          <widget class="StateWidget" name="connect_users" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -265,7 +265,7 @@
        <widget class="RecentChatUsersList" name="chat_user_list"/>
       </item>
       <item>
-       <widget class="QListWidget" name="connect_user_list"/>
+       <widget class="ConnectUserListView" name="connect_user_list"/>
       </item>
      </layout>
     </widget>
@@ -320,6 +320,11 @@
    <class>RecentChatUsersList</class>
    <extends>QListView</extends>
    <header location="global">RecentChatUsersList.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectUserListView</class>
+   <extends>QListView</extends>
+   <header location="global">ConnectUserListView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -21,6 +21,7 @@ public:
 	unsigned char get_message_nums() const;//用于获取当前的消息计数器值
 	signals:
 		void sig_increment_message_nums();
+		void sig_clear_all_unread_message();
 protected:
 	void paintEvent(QPaintEvent* event) override;
 	void mousePressEvent(QMouseEvent* event) override;

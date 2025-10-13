@@ -2,7 +2,8 @@
 #define  FINDSUCCESSWIDGET_H
 
 #include <QWidget>
-#include "ui_find_success_widget.h"
+#include <ui_find_success_widget.h>
+#include "add_friend_widget.h"
 #include <memory>
 #include <QDialog>
 
@@ -17,6 +18,7 @@ QT_END_NAMESPACE
 class find_success_widget : public QDialog
 {
 	friend class SearchList;
+	friend class add_friend_widget;
 	Q_OBJECT
 
 public:

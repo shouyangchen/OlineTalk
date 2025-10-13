@@ -2,8 +2,10 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QDebug>
+#include <QPromise>
 #include <QFile>
 #include <mutex>
+#include <qtconcurrentrun.h>
 
 HistoryDB_Mgr::HistoryDB_Mgr() :IChatHistoryProvider()
 {
@@ -33,6 +35,12 @@ HistoryDB_Mgr::HistoryDB_Mgr() :IChatHistoryProvider()
         this->init_db();
         qDebug() << "Database created and opened successfully.";
     }
+
+    // 修正信号连接：连接到正确的异步方法
+    connect(this, &HistoryDB_Mgr::sig_request_connect_user_list,
+        this, &HistoryDB_Mgr::getConnectUserListAsync);
+
+    qDebug() << "HistoryDB_Mgr initialized with signal connections";
 }
 
 void HistoryDB_Mgr::init_db()
@@ -41,7 +49,10 @@ void HistoryDB_Mgr::init_db()
         qDebug() << "Database is not open. Cannot initialize.";
         return;
     }
+
     QSqlQuery query(this->chat_history_databases);
+
+    // 创建聊天历史表
     if (query.exec(
         "CREATE TABLE IF NOT EXISTS chat_history ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -55,6 +66,86 @@ void HistoryDB_Mgr::init_db()
     }
     else {
         qDebug() << "Failed to create chat history table:" << query.lastError().text();
+    }
+
+    // 创建最近联系人列表表
+    QSqlQuery createRecentUserListTableQuery(this->chat_history_databases);
+    if (createRecentUserListTableQuery.exec(
+        "CREATE TABLE IF NOT EXISTS recent_contacts ("
+        "user_id TEXT PRIMARY KEY, "
+        "last_message TEXT, "
+        "unread_count INTEGER, "
+        "last_interaction DATETIME DEFAULT CURRENT_TIMESTAMP)"
+    )) {
+        qDebug() << "Recent contacts table created or already exists.";
+    }
+    else {
+        qDebug() << "Failed to create recent contacts table:" << createRecentUserListTableQuery.lastError().text();
+    }
+
+    // 创建连接用户表
+    QSqlQuery createConnectUsersTableQuery(this->chat_history_databases);
+    if (createConnectUsersTableQuery.exec(
+        "CREATE TABLE IF NOT EXISTS connect_users ("
+        "user_id TEXT PRIMARY KEY, "
+        "user_name TEXT, "
+        "email TEXT)"
+    )) {
+        qDebug() << "Connect users table created or already exists.";
+
+        // 添加一些测试数据（如果表为空）
+        addTestConnectUsersData();
+    }
+    else {
+        qDebug() << "Failed to create connect users table:" << createConnectUsersTableQuery.lastError().text();
+    }
+}
+
+// 添加测试连接用户数据的方法
+void HistoryDB_Mgr::addTestConnectUsersData()
+{
+    QSqlQuery query(this->chat_history_databases);
+
+    // 检查是否已有数据
+    if (!query.exec("SELECT COUNT(*) FROM connect_users")) {
+        qDebug() << "Failed to count connect_users:" << query.lastError().text();
+        return;
+    }
+
+    if (query.next() && query.value(0).toInt() > 0) {
+        qDebug() << "Connect users table already has data, count:" << query.value(0).toInt();
+        return;
+    }
+
+    qDebug() << "Adding test data to connect_users table...";
+
+    // 添加测试数据
+    QStringList testUsers = {
+        "INSERT INTO connect_users (user_id, user_name, email) VALUES ('userid001', '联系人一', 'user1@example.com')",
+        "INSERT INTO connect_users (user_id, user_name, email) VALUES ('userid002', '联系人二', 'user2@example.com')",
+        "INSERT INTO connect_users (user_id, user_name, email) VALUES ('userid003', '联系人三', 'user3@example.com')",
+        "INSERT INTO connect_users (user_id, user_name, email) VALUES ('userid004', '联系人四', 'user4@example.com')",
+        "INSERT INTO connect_users (user_id, user_name, email) VALUES ('userid005', '联系人五', 'user5@example.com')"
+    };
+
+    this->chat_history_databases.transaction();
+    bool success = true;
+
+    for (const QString& sql : testUsers) {
+        if (!query.exec(sql)) {
+            qDebug() << "Failed to insert test connect user:" << query.lastError().text();
+            success = false;
+            break;
+        }
+    }
+
+    if (success) {
+        this->chat_history_databases.commit();
+        qDebug() << "Test connect users data inserted successfully";
+    }
+    else {
+        this->chat_history_databases.rollback();
+        qDebug() << "Rolling back connect users test data";
     }
 }
 
@@ -77,7 +168,7 @@ QList<ChatMessage> HistoryDB_Mgr::getHistory(const QString& userId, int offset, 
     }
     QSqlQuery query(this->chat_history_databases);
     // 拼接 LIMIT/OFFSET 参数
-	//OFFSET 用于指定从哪一行开始返回结果，LIMIT 用于指定返回多少行
+    //OFFSET 用于指定从哪一行开始返回结果，LIMIT 用于指定返回多少行
     QString sql = QString("SELECT message_content, sender, timestamp, message_type FROM chat_history WHERE user_id = :userId ORDER BY timestamp DESC LIMIT %1 OFFSET %2").arg(count).arg(offset);//降序
     query.prepare(sql);
     query.bindValue(":userId", userId);
@@ -91,7 +182,7 @@ QList<ChatMessage> HistoryDB_Mgr::getHistory(const QString& userId, int offset, 
         msg.sender = query.value(1).toString();
         msg.timestamp = query.value(2).toDateTime();
         msg.message_type = query.value(3).toString();
-		messages.insert(0, msg);//将最早的消息插入到最前面此时第一个消息是最早的
+        messages.insert(0, msg);//将最早的消息插入到最前面此时第一个消息是最早的
     }
     return messages;
 }
@@ -174,10 +265,9 @@ void HistoryDB_Mgr::slot_addMessage(const QString& userId, const QList<ChatMessa
     qDebug() << "add message done!";
 }
 
-
 QList<ChatMessage> HistoryDB_Mgr::get_more_earlier_history(const QString& userId, const QDateTime& earliestTimestamp, int count)
 {
-	// 获取比 earliestTimestamp 更早的聊天记录
+    // 获取比 earliestTimestamp 更早的聊天记录
     QList<ChatMessage> messages;
     if (!this->chat_history_databases.isOpen()) {
         qDebug() << "Database is not open. Cannot get history.";
@@ -204,7 +294,7 @@ QList<ChatMessage> HistoryDB_Mgr::get_more_earlier_history(const QString& userId
     }
     // 由于是按时间降序取的，需要反转列表以按时间升序返回
     std::reverse(messages.begin(), messages.end());
-	qDebug() << "get_more_earlier_history done!";
+    qDebug() << "get_more_earlier_history done!";
     return messages;
 }
 
@@ -226,4 +316,422 @@ QList<QString> HistoryDB_Mgr::getUserIdFromDataBase()
         userIds.append(userId);
     }
     return userIds;
+}
+
+QSharedPointer<QPromise<QList<the_connected_user_info>>> HistoryDB_Mgr::getRecentChatUserList()
+{
+    auto promise = QSharedPointer<QPromise<QList<the_connected_user_info>>>(new QPromise<QList<the_connected_user_info>>());
+
+    // 使用 QtConcurrent::run 在后台线程执行数据库查询
+    auto future = QtConcurrent::run([this, promise]() {
+        QList<the_connected_user_info> userList;
+        qDebug() << "Starting database query in background thread...";
+
+        try {
+            // 创建线程安全的数据库连接 - 修复版本
+            QString connectionName = QString("RecentChatDB_%1").arg(reinterpret_cast<quintptr>(QThread::currentThread()));
+            qDebug() << "Using connection name:" << connectionName;
+
+            QSqlDatabase db;
+            if (QSqlDatabase::contains(connectionName)) {
+                db = QSqlDatabase::database(connectionName);
+                qDebug() << "Reusing existing database connection";
+            }
+            else {
+                // 不使用 cloneDatabase，直接创建新连接
+                db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+                db.setDatabaseName(this->chat_history_databases.databaseName());
+                qDebug() << "Created new database connection with path:" << db.databaseName();
+            }
+
+            if (!db.isValid()) {
+                qDebug() << "Database connection is not valid";
+                promise->addResult(userList);
+                promise->finish();
+                return;
+            }
+
+            if (!db.open()) {
+                qDebug() << "Failed to open database for recent chat list:" << db.lastError().text();
+                promise->addResult(userList);
+                promise->finish();
+                return;
+            }
+
+            qDebug() << "Database opened successfully, driver:" << db.driverName();
+
+            // 首先检查表是否存在且有数据
+            QSqlQuery checkQuery(db);
+            if (!checkQuery.exec("SELECT COUNT(*) FROM recent_contacts")) {
+                qDebug() << "Failed to count recent contacts:" << checkQuery.lastError().text();
+
+            }
+            else if (checkQuery.next()) {
+                int count = checkQuery.value(0).toInt();
+                qDebug() << "Recent contacts table has" << count << "records";
+
+                if (count == 0) {
+                    qDebug() << "No data found, adding test data...";
+                }
+            }
+
+            QSqlQuery query(db);
+            // 查询最近联系人，按最后交互时间降序排列
+            QString sql = R"(
+                SELECT user_id, last_message, unread_count, last_interaction
+                FROM recent_contacts
+                ORDER BY last_interaction DESC
+            )";
+
+            qDebug() << "Executing query:" << sql;
+
+            if (!query.exec(sql)) {
+                qDebug() << "Failed to execute recent contacts query:" << query.lastError().text();
+                promise->addResult(userList);
+                promise->finish();
+                return;
+            }
+
+            qDebug() << "Query executed successfully";
+
+            int count = 0;
+            while (query.next()) {
+                the_connected_user_info userInfo;
+                userInfo.set_user_id(query.value(0).toString());
+                userInfo.set_last_message(query.value(1).toString());
+                userInfo.set_unread_message_count(query.value(2).toInt());
+                userInfo.set_last_message_time(query.value(3).toDateTime());
+                userList.append(userInfo);
+                count++;
+
+                qDebug() << "Found user:" << userInfo.get_user_id() << userInfo.get_user_name();
+            }
+
+            qDebug() << "Total users found:" << count;
+
+            promise->addResult(userList);
+            promise->finish();
+            qDebug() << "getRecentChatUserList done, found" << userList.size() << "users.";
+        }
+        catch (const std::exception& e) {
+            qDebug() << "Exception in getRecentChatUserList:" << e.what();
+            promise->addResult(userList);
+            promise->finish();
+        }
+        catch (...) {
+            qDebug() << "Unknown exception in getRecentChatUserList";
+            promise->addResult(userList);
+            promise->finish();
+        }
+        });
+
+    return promise;
+}
+
+void HistoryDB_Mgr::getRecentChatUserListAsync()
+{
+    qDebug() << "Starting getRecentChatUserListAsync...";
+    auto promise = this->getRecentChatUserList();
+    auto future = promise->future();
+
+    // 先设置 future，再连接信号
+    this->future_watcher.setFuture(future);
+
+    // 断开之前的连接，避免重复连接
+    disconnect(&this->future_watcher, &QFutureWatcher<QList<the_connected_user_info>>::finished, nullptr, nullptr);
+
+    connect(&this->future_watcher, &QFutureWatcher<QList<the_connected_user_info>>::finished, [this]() {
+        qDebug() << "Future watcher finished signal received";
+        try {
+            if (this->future_watcher.isFinished()) {
+                auto result = this->future_watcher.result();
+                qDebug() << "Recent chat user list loaded, count:" << result.size();
+
+                // 发射信号通知UI更新
+                emit sig_recentChatUserListReady(result);
+            }
+            else {
+                qDebug() << "Future is not finished yet";
+            }
+        }
+        catch (const std::exception& e) {
+            qDebug() << "Error getting recent chat user list result:" << e.what();
+        }
+        catch (...) {
+            qDebug() << "Unknown error in future watcher";
+        }
+        });
+}
+
+void HistoryDB_Mgr::updateRecentContact(const QString& userId, const QString& userName, const QString& lastMessage)
+{
+    std::lock_guard<std::mutex> lock(this->db_mutex);
+
+    if (!this->chat_history_databases.isOpen()) {
+        qDebug() << "Database is not open. Cannot update recent contact.";
+        return;
+    }
+
+    QSqlQuery query(this->chat_history_databases);
+
+    // 使用 REPLACE 来插入或更新记录
+    query.prepare(R"(
+        REPLACE INTO recent_contacts (user_id, user_name, last_message, unread_count, last_interaction)
+        VALUES (:userId, :lastMessage, 
+                COALESCE((SELECT unread_count FROM recent_contacts WHERE user_id = :userId), 0) + 1,
+                CURRENT_TIMESTAMP)
+    )");
+
+    query.bindValue(":userId", userId);
+    query.bindValue(":lastMessage", lastMessage);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to update recent contact:" << query.lastError().text();
+    }
+}
+
+void HistoryDB_Mgr::clearUnreadCount(const QString& userId)
+{
+    std::lock_guard<std::mutex> lock(this->db_mutex);
+
+    if (!this->chat_history_databases.isOpen()) {
+        return;
+    }
+
+    QSqlQuery query(this->chat_history_databases);
+    if (!userId.isEmpty())// 清除指定用户的未读计数
+    {
+        query.prepare("UPDATE recent_contacts SET unread_count = 0 WHERE user_id = :userId");
+        query.bindValue(":userId", userId);
+    }
+    else// 清除所有用户的未读计数
+    {
+        query.prepare("UPDATE recent_contacts SET unread_count = 0");
+    }
+    if (!query.exec()) {
+        qDebug() << "Failed to clear unread count:" << query.lastError().text();
+    }
+}
+
+bool HistoryDB_Mgr::storeRecentUserList(const QList<the_connected_user_info>& userList)
+{
+    std::lock_guard<std::mutex> lock(this->db_mutex);
+    if (!this->chat_history_databases.isOpen()) {
+        qDebug() << "Database is not open. Cannot store recent user list.";
+        return false;
+    }
+    QSqlQuery query(this->chat_history_databases);
+    if (!this->chat_history_databases.transaction()) {
+        qDebug() << "Failed to start transaction:" << this->chat_history_databases.lastError().text();
+        return false;
+    }
+    bool success = true;
+    for (const auto& user : userList) {
+        query.prepare(R"(
+            INSERT INTO recent_contacts (user_id, last_message, unread_count, last_interaction)
+            VALUES (:userId, :lastMessage, :unreadCount, :lastInteraction)
+            ON CONFLICT(user_id) DO UPDATE SET
+                last_message=excluded.last_message,
+                unread_count=excluded.unread_count,
+                last_interaction=excluded.last_interaction
+        )");
+        query.bindValue(":userId", user.get_user_id());
+        query.bindValue(":lastMessage", user.get_last_message());
+        query.bindValue(":unreadCount", user.get_unread_message_count());
+        query.bindValue(":lastInteraction", user.get_last_message_time().toString(Qt::ISODate));
+        if (!query.exec()) {
+            qDebug() << "Failed to upsert recent contact:" << query.lastError().text()
+                << "SQL:" << query.lastQuery()
+                << "userId:" << user.get_user_id();
+            success = false;
+            break;
+        }
+    }
+    if (success) {
+        if (!this->chat_history_databases.commit()) {
+            qDebug() << "Failed to commit transaction:" << this->chat_history_databases.lastError().text();
+            return false;
+        }
+    }
+    else {
+        this->chat_history_databases.rollback();
+        return false;
+    }
+    return true;
+}
+
+QSharedPointer<QPromise<QList<connectUserList::user_info>>> HistoryDB_Mgr::getConnectUserList()
+{
+    auto promise = QSharedPointer<QPromise<QList<connectUserList::user_info>>>(new QPromise<QList<connectUserList::user_info>>());
+
+    auto future=QtConcurrent::run([this, promise]() {
+        QList<connectUserList::user_info> userList;
+        qDebug() << "Starting connect user list query in background thread...";
+
+        try {
+            QString connectionName = QString("ConnectUserDB_%1").arg(reinterpret_cast<quintptr>(QThread::currentThread()));
+            qDebug() << "Using connection name:" << connectionName;
+
+            QSqlDatabase db;
+            if (QSqlDatabase::contains(connectionName)) {
+                db = QSqlDatabase::database(connectionName);
+                qDebug() << "Reusing existing database connection";
+            }
+            else {
+                db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+                db.setDatabaseName(this->chat_history_databases.databaseName());
+                qDebug() << "Created new database connection with path:" << db.databaseName();
+            }
+
+            if (!db.isValid() || !db.open()) {
+                qDebug() << "Database connection failed:" << db.lastError().text();
+                promise->addResult(userList);
+                promise->finish();
+                return;
+            }
+
+            qDebug() << "Database opened successfully, driver:" << db.driverName();
+
+            // 检查表是否存在且有数据
+            QSqlQuery checkQuery(db);
+            if (!checkQuery.exec("SELECT COUNT(*) FROM connect_users")) {
+                qDebug() << "Failed to count connect_users:" << checkQuery.lastError().text();
+
+                // 如果查询失败，可能是表不存在，尝试创建并添加测试数据
+                if (checkQuery.exec("CREATE TABLE IF NOT EXISTS connect_users ("
+                    "user_id TEXT PRIMARY KEY, "
+                    "user_name TEXT, "
+                    "email TEXT, "
+                    "status TEXT DEFAULT 'online', "
+                    "created_time DATETIME DEFAULT CURRENT_TIMESTAMP)")) {
+
+                    // 添加测试数据
+                    QStringList testInserts = {
+                        "INSERT OR IGNORE INTO connect_users (user_id, user_name, email) VALUES ('connect001', '联系人一', 'user1@example.com')",
+                        "INSERT OR IGNORE INTO connect_users (user_id, user_name, email) VALUES ('connect002', '联系人二', 'user2@example.com')",
+                        "INSERT OR IGNORE INTO connect_users (user_id, user_name, email) VALUES ('connect003', '联系人三', 'user3@example.com')"
+                    };
+
+                    for (const QString& insertSql : testInserts) {
+                        QSqlQuery insertQuery(db);
+                        if (!insertQuery.exec(insertSql)) {
+                            qDebug() << "Failed to insert test data:" << insertQuery.lastError().text();
+                        }
+                    }
+                }
+            }
+            else if (checkQuery.next()) {
+                int count = checkQuery.value(0).toInt();
+                qDebug() << "Connect users table has" << count << "records";
+            }
+
+            QSqlQuery query(db);
+            QString sql = "SELECT user_id, user_name FROM connect_users ORDER BY user_name ASC";
+
+            qDebug() << "Executing query:" << sql;
+
+            if (!query.exec(sql)) {
+                qDebug() << "Failed to execute connect users query:" << query.lastError().text();
+                promise->addResult(userList);
+                promise->finish();
+                return;
+            }
+
+            qDebug() << "Query executed successfully";
+
+            int count = 0;
+            while (query.next()) {
+                connectUserList::user_info userInfo;
+                userInfo.user_id = query.value(0).toString();
+                userInfo.username = query.value(1).toString();
+                // 设置默认头像
+                userInfo.avatar = QPixmap(":/res/default_user_icon.png");
+
+                userList.append(userInfo);
+                count++;
+
+                qDebug() << "Found connect user:" << userInfo.user_id << userInfo.username;
+            }
+
+            qDebug() << "Total connect users found:" << count;
+
+            promise->addResult(userList);
+            promise->finish();
+
+        }
+        catch (const std::exception& e) {
+            qDebug() << "Exception in getConnectUserList:" << e.what();
+            promise->addResult(userList);
+            promise->finish();
+        }
+        catch (...) {
+            qDebug() << "Unknown exception in getConnectUserList";
+            promise->addResult(userList);
+            promise->finish();
+        }
+        });
+
+    return promise;
+}
+
+void HistoryDB_Mgr::getConnectUserListAsync()
+{
+    qDebug() << "Starting getConnectUserListAsync...";
+    auto promise = this->getConnectUserList();
+    auto future = promise->future();
+
+    // 先设置 future，再连接信号
+    this->connect_user_list_future_watcher.setFuture(future);
+
+    // 断开之前的连接，避免重复连接
+    disconnect(&this->connect_user_list_future_watcher, &QFutureWatcher<QList<connectUserList::user_info>>::finished, nullptr, nullptr);
+
+    connect(&this->connect_user_list_future_watcher, &QFutureWatcher<QList<connectUserList::user_info>>::finished, [this]() {
+        qDebug() << "Connect user list future watcher finished signal received";
+        try {
+            // 修复bug：应该检查 connect_user_list_future_watcher 而不是 future_watcher
+            if (this->connect_user_list_future_watcher.isFinished()) {
+                auto result = this->connect_user_list_future_watcher.result();
+                qDebug() << "Connect user list loaded, count:" << result.size();
+
+                // 发射信号通知UI更新
+                emit sig_connectUserListReady(result);
+            }
+            else {
+                qDebug() << "Connect user list future is not finished yet";
+            }
+        }
+        catch (const std::exception& e) {
+            qDebug() << "Error getting connect user list result:" << e.what();
+        }
+        catch (...) {
+            qDebug() << "Unknown error in connect user list future watcher";
+        }
+        });
+}
+
+void HistoryDB_Mgr::updateConnectUserList(const connectUserList::user_info& info)
+{
+    std::lock_guard<std::mutex> lock(this->db_mutex);
+    if (!this->chat_history_databases.isOpen()) {
+        qDebug() << "Database is not open. Cannot update connect user.";
+        return;
+    }
+    QSqlQuery query(this->chat_history_databases);
+    // 使用 REPLACE 来插入或更新记录
+    query.prepare(R"(
+        REPLACE INTO connect_users (user_id, user_name)
+        VALUES (:userId, :userName)
+    )");
+    query.bindValue(":userId", info.user_id);
+    query.bindValue(":userName", info.username);
+    if (!query.exec()) {
+        qDebug() << "Failed to update connect user:" << query.lastError().text();
+    }
+}
+
+void HistoryDB_Mgr::slot_update_connect_user_list()
+{
+    qDebug() << "slot_update_connect_user_list called";
+    this->getConnectUserListAsync();
 }

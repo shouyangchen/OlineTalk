@@ -19,7 +19,9 @@ void RecentChatUsersListDelegate::paint(QPainter* painter, const QStyleOptionVie
 	int unread_message_count = index.data(RecentChatListModel::UnreadMessageCountRole).toInt();
 	// 绘制背景
 	if (option.state & QStyle::State_Selected) {
-		painter->fillRect(option.rect, option.palette.highlight());
+		auto brush = option.palette.highlight();
+		brush.setColor(QColor(245, 245, 245));
+		painter->fillRect(option.rect,brush);
 	} else {
 		painter->fillRect(option.rect, option.palette.base());
 	}
