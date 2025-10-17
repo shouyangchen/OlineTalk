@@ -17,7 +17,7 @@ void NewFriendApplicationListDelegate::paint(QPainter* painter, const QStyleOpti
 	//绘制背景
 	QRect rect = option.rect;
 	QPoint topLeft = rect.topLeft();
-	QRect icon_rect = QRect(topLeft.x() + 10, topLeft.y() + 30, 50, 50);
+	QRect icon_rect = QRect(topLeft.x() + 10, topLeft.y() + 20, 50, 50);
 	QRect user_name_rect = QRect(icon_rect.right() + 20, topLeft.y() + 10, 150, 35);
 	QRect message_rect = QRect(icon_rect.right() + 20, topLeft.y() +60, rect.width()-icon_rect.width()-150, 20);
 	QRect time_rect = QRect(message_rect.right() + 5, topLeft.y() + 10, 150, 20);

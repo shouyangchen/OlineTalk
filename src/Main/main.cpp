@@ -9,6 +9,17 @@
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
+	//QProcess* fileOperatorProcess = new QProcess(&a);// 创建文件传输进程
+ //   QObject::connect(fileOperatorProcess, &QProcess::readyReadStandardOutput, [=]
+ //       {
+	//		QByteArray output = fileOperatorProcess->readAllStandardOutput();
+	//		qDebug() << "FileOperatorProcess Output:" << output;
+	//	});// 连接标准输出信号监视子进程；
+
+ //   QObject::connect(fileOperatorProcess, &QProcess::errorOccurred, [](QProcess::ProcessError error){
+ //       qDebug() << "Process error:" << error;
+ //   });
+
     // 配置文件加载
     QString appPath = QCoreApplication::applicationDirPath();
     QString configFile ="config.ini";
@@ -39,7 +50,12 @@ int main(int argc, char *argv[]) {
             qWarning("Could not load any stylesheet");
         }
     }
-
+    QString exePath = QDir::toNativeSeparators(appPath + QDir::separator() + "FileOperator.exe");
+    qDebug() << "Trying to start:" << exePath;
+    if (!QFile::exists(exePath)) {
+        qWarning() << "FileOperatorProcess.exe not found at:" << exePath;
+    }
+    //fileOperatorProcess->start(exePath);
     mainwindow w;
     w.show();
     return QApplication::exec();
