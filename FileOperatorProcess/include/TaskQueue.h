@@ -11,10 +11,12 @@ struct Request
     enum Request_type:unsigned char
     {
         REQUEST_SEND_FILE,//上传文件
-        REQUEST_DOWN_LOAD_FILE//下载文件
+        REQUEST_DOWN_LOAD_FILE,//下载文件
+		REQUEST_NEED_UPDATE_HOST//需要更新对端地址
     };
 
     Request_type request_type;
+	QString uid;//用户id
     QString target_host;//对端地址
 	quint16 target_port;//对端端口
 	QString file_path;//文件路径
@@ -28,6 +30,7 @@ Q_DECLARE_METATYPE(Request)
 inline QDataStream& operator<<(QDataStream& out, const Request& r)//序列化
 {
     out << static_cast<quint8>(r.request_type);
+	out << r.uid;
     out << r.target_host;
 	out << r.target_port;
 	out << r.file_path;
@@ -39,6 +42,7 @@ inline QDataStream& operator>>(QDataStream& in, Request& r)//反序列化
     quint8 t;
     in >> t;
     r.request_type = static_cast<Request::Request_type>(t);
+	in >> r.uid;
     in >> r.target_host;
 	in >> r.target_port;
 	in >> r.file_path;

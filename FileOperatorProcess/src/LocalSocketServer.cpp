@@ -4,7 +4,7 @@
 #include <QVariant>
 #include <QDataStream>
 #include <QDir>
-
+#include "FileOperatorProcess/include/TaskHandler.h"
 #include "FileOperatorProcess/include/TaskQueue.h"
 LocalSocketServer::LocalSocketServer(QObject* parent)
 {
@@ -28,6 +28,13 @@ LocalSocketServer::LocalSocketServer(QObject* parent)
 			connect(socket, &QLocalSocket::readyRead, this, [this, socket]() {
 				QByteArray data = socket->readAll();
 				this->processData(data);
+			});
+			connect(TaskHandler::getInstance(this,6868).get(), &TaskHandler::needUpdateHost, [this,socket](const Request& request)
+			{
+				QByteArray buffer;
+				QDataStream out(&buffer, QIODevice::WriteOnly);//创建数据流用于序列化
+				out << request;//序列化请求对象
+				socket->write(buffer);//发送数据到客户端
 			});
 			});
 }
