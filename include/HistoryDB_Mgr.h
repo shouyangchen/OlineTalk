@@ -1,6 +1,7 @@
 #ifndef HISTORY_DB_MGR_H
 #define HISTORY_DB_MGR_H
 #include "IChatHistoryProvider.h"
+#include "global.h"
 #include <QSqlDatabase>
 #include <QApplication>
 #include <QDir>

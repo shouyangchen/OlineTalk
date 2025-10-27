@@ -57,6 +57,13 @@ the_user_icon_mgr::~the_user_icon_mgr()
 	}
 }
 
+void the_user_icon_mgr::set_icon_timer()
+{
+	
+}
+
+
+
 void the_user_icon_mgr::init_db()
 {
 	QByteArray byteArray;
@@ -263,4 +270,23 @@ void the_user_icon_mgr::slot_get_user_icon_async(const QList<QString> user_list)
 void the_user_icon_mgr::slot_get_applications_user_icon_async(const QList<QString> user_list)
 {
 	this->get_applications_user_icon_async(user_list);
+}
+
+void the_user_icon_mgr::add_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon)
+{
+	//不直接调用set_user_icon以避免重复信号触发而是新插入
+	QByteArray byteArray;
+	QDataStream stream(&byteArray, QIODevice::WriteOnly);
+	stream << user_icon; // 将QPixmap转换为字节数组
+	std::lock_guard<std::mutex> lock(icon_mutex); // 加锁以确保线程安全
+	this->query.prepare("INSERT INTO user_icons (user_id, user_email, icon) VALUES (:id, :email, :pix)");
+	this->query.bindValue(":id", user_id);
+	this->query.bindValue(":email", user_email);
+	this->query.bindValue(":pix", byteArray);
+	if (!this->query.exec()) {
+		qDebug() << "Failed to insert user icon:" << this->query.lastError().text();
+	} else {
+		qDebug() << "User icon inserted successfully.";
+	}
+
 }

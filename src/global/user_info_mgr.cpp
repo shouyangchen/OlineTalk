@@ -47,3 +47,8 @@ void user_info_mgr::set_user_sex(QString sex)
 	this->user_sex = sex;
 }
 
+
+void user_info_mgr::set_user_uid(std::uint64_t uid)
+{
+	this->user_id = uid;
+}

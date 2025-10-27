@@ -22,12 +22,12 @@ mainwindow::mainwindow(QWidget* parent) :
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
     this->setWindowTitle("登录界面");
     this->loginui_instance = new loginui(); 
-    connect_signals();
     this->setMaximumSize(QSize(350, 550));
     this->setMinimumSize(QSize(350, 550));
     this->setCentralWidget(this->loginui_instance);
     this->loginui_instance->show();//显示登录界面
     this->chat_ui_instance = new chat_ui();
+    connect_signals();
     SystemTrayIcon::getInstance(QIcon(":/res/default_user_icon_withe_black.png"), nullptr);
     SystemTrayIcon::getInstance()->show();
     this->chat_ui_instance->show();
@@ -51,7 +51,9 @@ void mainwindow::display_chat_ui()
             the_user_icon_mgr::getInstance()->get_user_icon(
                 QString::number(user_info_mgr::getInstance(QPixmap{},QString{}, QString{},
                     std::uint64_t{})->get_user_id()), QString{}));
+		this->chat_ui_instance->get_friend_requests_list();//获取好友申请列表
         this->chat_ui_instance->show();
+        
         qDebug() << "Chat UI displayed successfully";
     } catch (const std::exception& e) {
         qDebug() << "Error displaying chat UI:" << e.what();
@@ -72,6 +74,7 @@ void mainwindow::connect_signals()
     } catch (const std::exception& e) {
         qDebug() << "Error connecting signals:" << e.what();
     }
+    connect(this->loginui_instance, &loginui::have_the_user_icon, this->chat_ui_instance, &chat_ui::slot_replace_user_icon);
 }
 
 mainwindow::~mainwindow() {

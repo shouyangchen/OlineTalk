@@ -6,6 +6,8 @@ class ConnectUserListView : public QListView
 	Q_OBJECT
 public:
 	ConnectUserListView(QWidget* parent = nullptr);
-	~ConnectUserListView() override = default;
+	~ConnectUserListView() override;
+protected:
+	bool eventFilter(QObject* watched, QEvent* event) override;
 };
 #endif

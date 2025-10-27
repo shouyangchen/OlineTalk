@@ -7,7 +7,7 @@
 
 ConnectUserListModel::ConnectUserListModel(QObject* parent) : QAbstractListModel(parent)
 {
-    qDebug() << "Creating ConnectUserListModel";
+    //qDebug() << "Creating ConnectUserListModel";
 
     // 连接数据库管理器信号 - 接收联系人列表数据
     connect(HistoryDB_Mgr::getInstance().get(), &HistoryDB_Mgr::sig_connectUserListReady,
@@ -34,7 +34,7 @@ ConnectUserListModel::ConnectUserListModel(QObject* parent) : QAbstractListModel
     // 请求联系人列表
     emit HistoryDB_Mgr::getInstance()->sig_request_connect_user_list();
     emit this->sig_need_loading_user_icon_or_update_user_icon(this->user_name_model);
-    qDebug() << "ConnectUserListModel created successfully";
+    //qDebug() << "ConnectUserListModel created successfully";
 }
 
 int ConnectUserListModel::rowCount(const QModelIndex& parent) const
@@ -105,21 +105,18 @@ bool ConnectUserListModel::setData(const QModelIndex& index, const QVariant& val
 
 void ConnectUserListModel::slot_update_connect_user_list(const QList<connectUserList::user_info>& user_list)
 {
-    qDebug() << "ConnectUserListModel: Received user list with" << user_list.size() << "users";
+    //qDebug() << "ConnectUserListModel: Received user list with" << user_list.size() << "users";
 
     beginResetModel();
-    this->model.clear();
-    this->user_name_model.clear();
-
     for (const auto& user : user_list) {
         this->model.insert(user.user_id, user);
         this->user_name_model.append(user.user_id);
-        qDebug() << "ConnectUserListModel: Added user:" << user.user_id << "name:" << user.username;
+        //qDebug() << "ConnectUserListModel: Added user:" << user.user_id << "name:" << user.username;
     }
 
     endResetModel();
 
-    qDebug() << "ConnectUserListModel: Model updated, final size:" << model.size();
+    //qDebug() << "ConnectUserListModel: Model updated, final size:" << model.size();
     
     // 发射信号通知用户列表已更新
     emit userListUpdated(user_list.size());
@@ -165,19 +162,19 @@ void ConnectUserListModel::get_user_icon()
 
 void ConnectUserListModel::refreshUserList()
 {
-    qDebug() << "ConnectUserListModel: Manual refresh requested";
+    //qDebug() << "ConnectUserListModel: Manual refresh requested";
     emit HistoryDB_Mgr::getInstance()->sig_request_connect_user_list();
 }
 
 void ConnectUserListModel::refreshUserIcons()
 {
-    qDebug() << "ConnectUserListModel: Manual icon refresh requested";
+    //qDebug() << "ConnectUserListModel: Manual icon refresh requested";
 }
 
 
 void ConnectUserListModel::slot_get_users_name(const QList<QString>& user_id_list)
 {
-	qDebug() << "doing get users name";
+	//qDebug() << "doing get users name";
     QList<std::pair<QString, QString>>users_name;
 	for (auto&item:user_id_list)
 	{
@@ -192,7 +189,7 @@ void ConnectUserListModel::slot_get_users_name(const QList<QString>& user_id_lis
         
     }
 	emit sig_connect_users_name_loading_done(users_name);//发射信号通知用户名称加载完成
-	qDebug() << "id " << user_id_list.size() << "name " << users_name.size();
+	//qDebug() << "id " << user_id_list.size() << "name " << users_name.size();
 }
 
 
@@ -211,4 +208,15 @@ void ConnectUserListModel::slot_update_user_name(const std::pair<QString, QStrin
         emit dataChanged(idx, idx, { connectListModelRole::UserNameRole });
 	}
 	emit sig_connect_user_name_changed(user); // 发射信号通知用户名称改变
+}
+
+
+ConnectUserListModel::~ConnectUserListModel()
+{
+    //qDebug() << "Destroying ConnectUserListModel";
+	for (auto it = model.begin(); it != model.end(); ++it) {
+
+		HistoryDB_Mgr::getInstance()->updateConnectUserList(it.value()); // 更新数据库中的联系人信息
+	}
+	qDebug() << "ConnectUserListModel destroyed";
 }

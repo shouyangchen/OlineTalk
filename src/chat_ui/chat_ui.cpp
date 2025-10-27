@@ -12,11 +12,13 @@
 #include "add_user_item.h"
 #include "chat_user_display.h"
 #include "loadinguserwidget.h"
+#include "NewFriendApplicationListModel.h"
 #include "the_user_icon_mgr.h"
 #include "user_info_mgr.h"
 #include "StyleManager.h"
 #include "RecentChatUsersList.h"
 #include "RecentChatUsersListModel.h"
+#include "TcpMgr.h"
 
 chat_ui::chat_ui(QWidget* parent)
     :QWidget(parent),mode(CHAT_UI_MODE::ChatMode),state(CHAT_UI_MODE::ChatMode),is_loading(false)
@@ -95,6 +97,7 @@ chat_ui::chat_ui(QWidget* parent)
         recentChatModel->loading_user_icon_f();
         connect(this->ui->chat_user_list, &RecentChatUsersList::user_selected, 
                 recentChatModel, &RecentChatListModel::slot_user_selected);
+		connect(this->ui->chat_user_list, &RecentChatUsersList::user_selected, this->ui->chat_page, &ChatPage::on_history_id_changed);//连接用户选择信号到聊天页面让chatpage的内置uid更新
         auto message_label = this->ui->chat_side_bar->findChild<DisplayMessageNumsLabel*>("state_widget_message_icon_label");
         if (message_label) {
             connect(message_label, &DisplayMessageNumsLabel::sig_clear_all_unread_message, 
@@ -102,7 +105,21 @@ chat_ui::chat_ui(QWidget* parent)
             connect(recentChatModel, &RecentChatListModel::totalUnreadMessageCountChanged, 
                     message_label, &DisplayMessageNumsLabel::set_message_nums);
         }
-        qDebug() << "chat_ui setup completed successfully";
+        //qDebug() << "chat_ui setup completed successfully";
+
+        //设置添加好友申请列表的视图信号连接到对应模型的槽函数
+        QWidget* new_friend_applications_widget = this->ui->stackedWidget->widget(4);
+		auto new_friend_applications_list_view = new_friend_applications_widget->findChild<NewFriendApplicationListView*>("listView");
+        connect(dynamic_cast<NewFriendApplicationListView*>(new_friend_applications_list_view), &NewFriendApplicationListView::sig_accept_application_no_recent_chat_list,[recentChatModel](const the_connected_user_info&info)
+        {
+				recentChatModel->sig_upsert_user(info.get_user_id(), QString{}, QString{ "你们已近是好友了赶紧聊天吧！" }, 1);//插入一个新的最近联系人
+        });
+        connect(dynamic_cast<NewFriendApplicationListView*>(new_friend_applications_list_view), &NewFriendApplicationListView::sig_accept_application_on_connect_user_list,[connectModel](const connectUserList::user_info&info)
+        {
+				connectModel->slot_update_connect_user_list({ info });//更新好友列表
+        });
+
+		connect(TcpMgr::getInstance().get(), &TcpMgr::sig_new_message, recentChatModel, &RecentChatListModel::slot_new_message_coming);//连接新消息信号到最近联系人模型的槽函数
     }
     catch (const std::exception& e) {
         qDebug() << "Error in chat_ui constructor:" << e.what();
@@ -169,10 +186,17 @@ void chat_ui::connect_sig()
     using no_value_clicked_sig_ptr = void (ClickedFrame::*)();
     no_value_clicked_sig_ptr sig_ptr = &ClickedFrame::sig_clicked;
 
-    connect(this->ui->new_friends_frame,sig_ptr, [this]
+	connect(this->ui->new_friends_frame, sig_ptr, [this]//点击新的好友申请控件时切换到新的好友申请页面并获取好友申请列表
         {
     		this->ui->stackedWidget->setCurrentIndex(the_stack_widget_index->value("new_friend_applications_widget"));
-			qDebug() << "New friend applications clicked";
+            qDebug() << "Fetching friend requests list...";
+            auto user_id = user_info_mgr::getInstance(QPixmap{}, QString{}, QString{}, std::uint64_t{})->get_user_id();
+            QJsonObject obj;
+            obj["application_user_id"] = static_cast<double>(user_id);
+            QJsonDocument doc(obj);
+            TcpMgr::getInstance()->send_data(Message_id::GET_ADD_FRIEND_REQUESTS, doc.toJson());
+            qDebug() << "Friend requests list request sent for user ID:" << user_id;
+			//qDebug() << "New friend applications clicked";
         });
 
 }
@@ -358,4 +382,15 @@ void chat_ui::set_qss()
 
     // 设置搜索框的占位符文本
     ui->serach_edit->setPlaceholderText("搜索好友");
+}
+
+
+void chat_ui::get_friend_requests_list()
+{
+}
+
+
+void chat_ui::slot_replace_user_icon(QPixmap pix)
+{
+    this->ui->user_icon->setPixmap(pix.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }

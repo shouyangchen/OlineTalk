@@ -22,7 +22,7 @@ private:
 
 public:
     ConnectUserListModel(QObject* parent = nullptr);
-    ~ConnectUserListModel() override = default;
+    ~ConnectUserListModel() override;
 
     enum connectListModelRole : quint16
     {

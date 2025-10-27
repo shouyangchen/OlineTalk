@@ -23,6 +23,7 @@ class the_user_icon_mgr :public QObject,public singleton<the_user_icon_mgr>
 private:
 	friend class singleton<the_user_icon_mgr>;
 	the_user_icon_mgr();
+	QTimer timer_of_icon;//用于定时向服务器获取联系人或者用户的最新的头像
 	QSqlDatabase db;
 	QSqlQuery query;
 	QFile icon_file;
@@ -32,6 +33,7 @@ private:
 	QFutureWatcher<std::pair<QPixmap, QString>>future_watcher_applications_icon;// 监视异步任务用于获取好友申请列表头像
 	QList<std::pair<QPixmap,QString>> icon_list;// 存储异步获取的用户头像
 	void init_db(); // 初始化数据库
+	void set_icon_timer();//初始化用户头像定时器
 	QFuture<std::pair<QPixmap,QString>> loading_user_icon(const QList<QString> user_id);
 	signals:
 		void user_icon_changed(QString &user_id,QPixmap&user_icon); // 用户头像改变时发出的信号
@@ -51,6 +53,7 @@ public slots:
 	void set_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon);
 	void slot_get_user_icon_async(const QList<QString> user_list);
 	void slot_get_applications_user_icon_async(const QList<QString>user_list);
+	void add_user_icon(const QString& user_id, const QString& user_email, const QPixmap& user_icon);
 };
 #endif // THE_USER_ICON_MGR_H
 

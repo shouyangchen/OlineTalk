@@ -11,7 +11,8 @@ std::function<void(QWidget*)> repolish_widget_func = [](QWidget*w)  {
 QString gate_url_prefix = "";
 
 
-
+//初始化全局变量
+bool is_first_login = false;//是否是第一次登录是则需要下载用户头像等信息和加载登录用户的联系人列表
 
 // ------------------ the_connected_user_info 实现 ------------------
 

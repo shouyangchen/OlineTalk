@@ -36,7 +36,8 @@ public:
 	signals:
 	void sig_send_the_message(const ChatMessage& messages,QString const&uid);
 public slots:
-	void slot_send_the_message(const ChatMessage& messages,QString const&uid);
+	void slot_send_the_message(const ChatMessage& messages, QString const& uid);
+	void slot_received_message(const ChatMessage& message, QString const& uid);
 };
 #endif
 

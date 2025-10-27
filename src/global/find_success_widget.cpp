@@ -23,13 +23,13 @@ find_success_widget::find_success_widget(QWidget *parent)
 void find_success_widget::set_serach_info(std::shared_ptr<SearchInfo> si)
 {
 	this->search_info_m = std::move(si);
-	this->ui->friend_name->setText(this->search_info_m->_name);
+	this->ui->friend_name->setText(this->search_info_m->name);
 }
 
 
 void find_success_widget::on_the_add_friend_clicked()
 {
-	qDebug() <<u8"添加好友界面被触发！";
+	//qDebug() <<u8"添加好友界面被触发！";
 	emit this->will_close();
 	add_friend_widget* afw = new add_friend_widget();
 	afw->set_search_info(this->search_info_m);

@@ -25,6 +25,7 @@ HistoryDB_Mgr::HistoryDB_Mgr() :IChatHistoryProvider()
             return;
         }
         file.close();
+		is_first_login = true;//标记为第一次登录需要下载用户头像等信息和加载登录用户的联系人列表
     }
 
     this->chat_history_databases = QSqlDatabase::addDatabase("QSQLITE");
@@ -317,7 +318,7 @@ QList<ChatMessage> HistoryDB_Mgr::get_more_earlier_history(const QString& userId
     }
     // 由于是按时间降序取的，需要反转列表以按时间升序返回
     std::reverse(messages.begin(), messages.end());
-    qDebug() << "get_more_earlier_history done!";
+    //qDebug() << "get_more_earlier_history done!";
     return messages;
 }
 
@@ -353,35 +354,35 @@ QSharedPointer<QPromise<QList<the_connected_user_info>>> HistoryDB_Mgr::getRecen
         try {
             // 创建线程安全的数据库连接 - 修复版本
             QString connectionName = QString("RecentChatDB_%1").arg(reinterpret_cast<quintptr>(QThread::currentThread()));
-            qDebug() << "Using connection name:" << connectionName;
+            //qDebug() << "Using connection name:" << connectionName;
 
             QSqlDatabase db;
             if (QSqlDatabase::contains(connectionName)) {
                 db = QSqlDatabase::database(connectionName);
-                qDebug() << "Reusing existing database connection";
+                //qDebug() << "Reusing existing database connection";
             }
             else {
                 // 不使用 cloneDatabase，直接创建新连接
                 db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
                 db.setDatabaseName(this->chat_history_databases.databaseName());
-                qDebug() << "Created new database connection with path:" << db.databaseName();
+                //qDebug() << "Created new database connection with path:" << db.databaseName();
             }
 
             if (!db.isValid()) {
-                qDebug() << "Database connection is not valid";
+                //qDebug() << "Database connection is not valid";
                 promise->addResult(userList);
                 promise->finish();
                 return;
             }
 
             if (!db.open()) {
-                qDebug() << "Failed to open database for recent chat list:" << db.lastError().text();
+                //qDebug() << "Failed to open database for recent chat list:" << db.lastError().text();
                 promise->addResult(userList);
                 promise->finish();
                 return;
             }
 
-            qDebug() << "Database opened successfully, driver:" << db.driverName();
+            //qDebug() << "Database opened successfully, driver:" << db.driverName();
 
             // 首先检查表是否存在且有数据
             QSqlQuery checkQuery(db);
@@ -406,7 +407,7 @@ QSharedPointer<QPromise<QList<the_connected_user_info>>> HistoryDB_Mgr::getRecen
                 ORDER BY last_interaction DESC
             )";
 
-            qDebug() << "Executing query:" << sql;
+            //qDebug() << "Executing query:" << sql;
 
             if (!query.exec(sql)) {
                 qDebug() << "Failed to execute recent contacts query:" << query.lastError().text();
@@ -453,7 +454,7 @@ QSharedPointer<QPromise<QList<the_connected_user_info>>> HistoryDB_Mgr::getRecen
 
 void HistoryDB_Mgr::getRecentChatUserListAsync()
 {
-    qDebug() << "Starting getRecentChatUserListAsync...";
+    //qDebug() << "Starting getRecentChatUserListAsync...";
     auto promise = this->getRecentChatUserList();
     auto future = promise->future();
 
@@ -464,7 +465,7 @@ void HistoryDB_Mgr::getRecentChatUserListAsync()
     disconnect(&this->future_watcher, &QFutureWatcher<QList<the_connected_user_info>>::finished, nullptr, nullptr);
 
     connect(&this->future_watcher, &QFutureWatcher<QList<the_connected_user_info>>::finished, [this]() {
-        qDebug() << "Future watcher finished signal received";
+        //qDebug() << "Future watcher finished signal received";
         try {
             if (this->future_watcher.isFinished()) {
                 auto result = this->future_watcher.result();
@@ -645,7 +646,7 @@ QSharedPointer<QPromise<QList<connectUserList::user_info>>> HistoryDB_Mgr::getCo
             }
             else if (checkQuery.next()) {
                 int count = checkQuery.value(0).toInt();
-                qDebug() << "Connect users table has" << count << "records";
+                //qDebug() << "Connect users table has" << count << "records";
             }
 
             QSqlQuery query(db);
@@ -710,7 +711,7 @@ void HistoryDB_Mgr::getConnectUserListAsync()
     disconnect(&this->connect_user_list_future_watcher, &QFutureWatcher<QList<connectUserList::user_info>>::finished, nullptr, nullptr);
 
     connect(&this->connect_user_list_future_watcher, &QFutureWatcher<QList<connectUserList::user_info>>::finished, [this]() {
-        qDebug() << "Connect user list future watcher finished signal received";
+        //qDebug() << "Connect user list future watcher finished signal received";
         try {
             // 修复bug：应该检查 connect_user_list_future_watcher 而不是 future_watcher
             if (this->connect_user_list_future_watcher.isFinished()) {
@@ -765,7 +766,7 @@ QFuture<QList<NewFriendApplicationlNS::user_application>> HistoryDB_Mgr::getAppl
 	auto promise = QSharedPointer<QPromise<QList<NewFriendApplicationlNS::user_application>>>(new QPromise<QList<NewFriendApplicationlNS::user_application>>());
     auto future = QtConcurrent::run([this,promise]() {
         QList<NewFriendApplicationlNS::user_application> applicationList;
-        qDebug() << "Starting friend application list query in background thread...";
+        //qDebug() << "Starting friend application list query in background thread...";
         try {
             QFuture<QList<NewFriendApplicationlNS::user_application>>future;
             QString connectionName = QString("FriendApplicationDB_%1").arg(reinterpret_cast<quintptr>(QThread::currentThread()));
@@ -798,7 +799,7 @@ QFuture<QList<NewFriendApplicationlNS::user_application>> HistoryDB_Mgr::getAppl
             }
             QSqlQuery query(db);
             QString sql = "SELECT user_id, user_name, msg, time, status FROM friend_applications ORDER BY time DESC";
-            qDebug() << "Executing query:" << sql;
+            //qDebug() << "Executing query:" << sql;
             if (!query.exec(sql)) {
                 qDebug() << "Failed to execute friend applications query:" << query.lastError().text();
                 promise->addResult(applicationList);
@@ -818,7 +819,7 @@ QFuture<QList<NewFriendApplicationlNS::user_application>> HistoryDB_Mgr::getAppl
                 count++;
                 qDebug() << "Found application from user:" << app.user_id << app.user_id;
             }
-            qDebug() << "Total friend applications found:" << count;
+            //qDebug() << "Total friend applications found:" << count;
             promise->addResult(applicationList);
             promise->finish();
         }
@@ -838,7 +839,7 @@ QFuture<QList<NewFriendApplicationlNS::user_application>> HistoryDB_Mgr::getAppl
 
 void HistoryDB_Mgr::getApplicationListAsync()
 {
-    qDebug() << "Starting getApplicationListAsync...";
+    //qDebug() << "Starting getApplicationListAsync...";
     auto future = this->getApplicationList();
     // 先设置 future，再连接信号
 	// 断开之前的连接，避免重复连接

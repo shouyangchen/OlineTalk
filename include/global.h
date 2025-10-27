@@ -13,7 +13,7 @@
 #include <QCryptographicHash>
 #include <QString>
 #include <QMap>
-
+extern bool is_first_login;//是否是第一次登录是则需要下载用户头像等信息和加载登录用户的联系人列表
 extern QString gate_url_prefix;
 extern std::function<void(QWidget*)> repolish_widget_func;//刷新QSS的函数
 
@@ -28,17 +28,25 @@ enum  ReqId:std::uint16_t{
 };
 
 // TCP消息ID枚举 (3000-3999)
-enum Message_id:qint16
+enum Message_id:quint32
 {
-	LOGIN_MESSAGE=3001,              // 登录消息
-    SEND_MESSAGE_HANDLER = 3002,     // 发送消息处理
-    HEARTBEAT_PACKET = 3003,         // 心跳包
-    ID_CHAT_LOGIN_RSP=3004,           // 用户登录响应
-	SEARCH_USER             // 搜索用户
+    LOGIN_MESSAGE = 3001,
+    SEND_MESSAGE_HANDLER = 3002,
+    HEARTBEAT_PACKET = 3003,
+    ID_CHAT_LOGIN_RSP = 3004,//用户登录
+    SEARCH_USER = 3005,//搜索用户
+    FILE_CLIENT_VERIFY = 3006,//文件操作进程验证用户连接
+    TRANS_MESSAGE_TO_OTHER_SERVER = 3007,//转发消息到其他服务器
+    ADD_FRIEND_REQUEST = 3008,//添加好友请求
+    ADD_FRIEND_RESPONSE = 3009,//添加好友响应
+    GET_ADD_FRIEND_REQUESTS = 3010,//获取好友请求列表
+    GET_FRIEND_LIST = 3011,//获取好友列表
+	DELETE_FRIEND = 3012,//删除好友
+    UPDATE_FRIEND_INFO = 3013,//更新好友信息
 };
 
 enum  ErrorCodes:std::uint16_t{
-    SUCCESS=0, //成功}
+    SUCCESS=0, //成功
     ERR_JOSN=1, //json错误
     ERR_NETWORK=2, //网络错误
     VarifyError = 1004,// 验证码错误
@@ -122,7 +130,7 @@ struct ChatMessage
 	QDateTime timestamp;
     QString message_type;
 	QString sender;//消息发送者SELF or OTHER
-    QPixmap pixmap;
+	QPixmap pixmap;//如果为图片或文件则存储缩略图
 };
 
 

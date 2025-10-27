@@ -165,7 +165,7 @@ void MessageTextEdit::insertChatMessage(QVector<ChatMessage>& list, const QStrin
     ChatMessage msg;
     msg.message_type = type;
     msg.message_context = context;
-    msg.pixmap = pix;
+	msg.pixmap = pix;//如果为图片或文件则存储缩略图
     msg.timestamp = QDateTime::currentDateTime();
     //msg.sender = "SELF"; // 这里默认发消息的是自己
     list.append(msg);

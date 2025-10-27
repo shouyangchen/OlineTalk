@@ -28,7 +28,7 @@ protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 public slots:
 	void on_the_item_clicked(QListWidgetItem* item);
-	void slot_user_seracher(std::shared_ptr<SearchInfo> user_info);
+	void slot_user_seracher(std::vector<std::shared_ptr<SearchInfo>> user_info);
 };
 #endif
 

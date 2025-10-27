@@ -107,6 +107,7 @@ public slots:
 	void slot_the_recent_user_name_loading_done(const QList<std::pair<QString, QString>>& users_name);
 	void slot_the_user_name_changed(const std::pair<QString, QString>& user_name);
     void slot_upsert_user(const QString& user_id, const QString& avatarPath, const QString& last_msg, int unread = 0);
+	void slot_new_message_coming(ChatMessage message, QString from_uid);// 有新的消息到达
 };
 
 #endif // RECENTCHATUSERSLISTMODEL_H

@@ -13,7 +13,7 @@ private:
 	QPixmap user_iocn;
 	QString user_name;
 	QString user_sex;
-	const std::uint64_t user_id;
+	std::uint64_t user_id;
 public:
 	user_info_mgr(user_info_mgr&) = delete;
 	user_info_mgr(user_info_mgr&&) = delete;
@@ -25,19 +25,21 @@ public:
 	void set_user_icon(QPixmap icon);
 	void set_user_name(QString name);
 	void set_user_sex(QString sex);
+	void set_user_uid(std::uint64_t uid);
 
 };
 
 
 class SearchInfo {
 public:
-	SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon);
-	std::uint64_t _uid;
-	QString _name;
-	QString _nick;
-	QString _desc;
-	int _sex;
-	QString _icon;
+	SearchInfo() = default;
+	SearchInfo(QString uid, QString name, QString nick, QString desc, int sex, QString icon);
+	QString uid;//用户ID
+	QString name;//用户名
+	QString nick;//昵称
+	QString desc;//个性签名
+	int sex;//性别
+	QString icon;//头像URL
 };
 
 

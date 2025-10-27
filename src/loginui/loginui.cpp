@@ -115,12 +115,14 @@ void loginui::init_handlers()
             return;
         }
 
-        auto uid = obj["uid"].toInt();
+        auto uid = static_cast<std::uint64_t>(obj["uid"].toDouble());
+        qDebug() << "Received UID from JSON:" << uid ;
         auto token = obj["token"].toString();
         auto host = obj["host"].toString();
 
     	auto user_info = user_info_mgr::getInstance(QPixmap{}, QString{this->ui->lineEdit_username->text()}, QString{}, uid);
         // 处理端口 - 可能是字符串也可能是数字
+        user_info->set_user_uid(uid);
         auto portValue = obj["port"];
         int port = 0;
         if (portValue.isString()) {
@@ -184,6 +186,7 @@ void loginui::init_handlers()
                 QPixmap user_icon;
                 if (!user_icon.loadFromData(byteArray))
                 {
+
                     qDebug() << "Failed to load user icon from data";
                     return;
                 }

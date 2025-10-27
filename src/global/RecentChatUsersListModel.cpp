@@ -132,6 +132,7 @@ void RecentChatListModel::slot_user_selected(QString const& user_id)
 	increase_chat_weight(user_id);
 	add_the_model_cache(user_id);
 	qDebug() << "User selected, increased weight and ensured cache for user_id:" << user_id;
+
 	
 }
 
@@ -537,4 +538,62 @@ void RecentChatListModel::loading_users_name()
     
     qDebug() << "RecentChatListModel: Requesting user names for" << user_id_list.size() << "users:" << user_id_list;
     emit sig_request_users_name(user_id_list);
+}
+
+
+void RecentChatListModel::slot_new_message_coming(ChatMessage message, QString from_uid)
+{
+	//TODO: 有新的消息到达就先在用户聊天记录model的缓存中寻找对应的model，如果没有则创建一个新的model并添加到缓存中，然后将消息添加到对应的model中
+	//TODO: 然后在最近联系人列表中找到对应的用户并更新最后一条消息和未读消息数量如果没有找到则添加一个新的用户到最近联系人列表中
+	auto chatHistoryModel = this->model_cache->object(from_uid);//先在缓存中寻找对应的model
+	if (chatHistoryModel==nullptr)//如果没有找到则创建一个新的model并添加到缓存中
+	{
+		chatHistoryModel = new ChatHistoryDataModel(this);
+		this->model_cache->insert(from_uid, chatHistoryModel);
+	}
+	chatHistoryModel->appendMessages({message});//将消息添加到对应的model中
+	//在最近联系人列表中找到对应的用户并更新最后一条消息和未读消息数量
+	bool found = false;
+	for (int i = 0; i < model.size(); ++i)
+	{
+		if (model[i].get_user_id() == from_uid)
+		{
+			//找到用户则更新最后一条消息和未读消息数量并且将他移动到最近联系人列表的最前面
+
+			found = true;//找到了对应的用户
+			model[i].set_last_message(message.message_context.toString());//更新最后一条消息
+			model[i].set_last_message_time(message.timestamp);//更新最后消息时间
+			model[i].increment_unread_message_count();//增加未读消息数量
+			if (i != 0)
+			{
+				//先通知数据改变
+				QModelIndex idx = index(i, 0);
+				emit dataChanged(idx, idx, { LastMessageRole, LastMessageTimeRole, UnreadMessageCountRole });
+				//移动到最前面
+				beginMoveRows(QModelIndex(), i, i, QModelIndex(), 0);
+				auto user_info = model.takeAt(i);
+				model.insert(0, user_info);
+				endMoveRows();
+			}
+			// 自动更新总未读消息数
+			updateTotalUnreadMessageCount();
+			return;
+		}
+
+	}
+	//如果没有找到则添加一个新的用户到最近联系人列表中
+	if (found==false)
+	{
+		the_connected_user_info newUser;//创建一个新的用户
+		newUser.set_user_id(from_uid);//设置用户ID
+		newUser.set_last_message(message.message_context.toString());//设置最后一条消息
+		newUser.set_last_message_time(message.timestamp);//设置最后消息时间
+		newUser.set_unread_message_count(1);//设置未读消息数量为1
+		beginInsertRows(QModelIndex(), 0, 0);
+		model.insert(0, newUser);
+		endInsertRows();
+		QModelIndex idx = index(0, 0);//获取对应的index
+		emit dataChanged(idx, idx, { UserIdRole, LastMessageRole, LastMessageTimeRole, UnreadMessageCountRole });//通知数据改变
+	}
+	
 }

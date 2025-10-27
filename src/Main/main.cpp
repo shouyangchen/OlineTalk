@@ -6,19 +6,46 @@
 #include "loginui.h"
 #include "StyleManager.h"
 
+
+/**
+ *                             _ooOoo_
+ *                            o8888888o
+ *                            88" . "88
+ *                            (| -_- |)
+ *                            O\  =  /O
+ *                         ____/`---'\____
+ *                       .'  \\|     |//  `.
+ *                      /  \\|||  :  |||//  \
+ *                     /  _||||| -:- |||||-  \
+ *                     |   | \\\  -  /// |   |
+ *                     | \_|  ''\---/''  |   |
+ *                     \  .-\__  `-`  ___/-. /
+ *                   ___`. .'  /--.--\  `. . __
+ *                ."" '<  `.___\_<|>_/___.'  >'"".
+ *               | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ *               \  \ `-.   \_ __\ /__ _/   .-` /  /
+ *          ======`-.____`-.___\_____/___.-`____.-'======
+ *                             `=---='
+ *          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *                     佛祖保佑        永无BUG,前后端一次连通
+ *
+**/
+
+
+
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
-	//QProcess* fileOperatorProcess = new QProcess(&a);// 创建文件传输进程
- //   QObject::connect(fileOperatorProcess, &QProcess::readyReadStandardOutput, [=]
- //       {
-	//		QByteArray output = fileOperatorProcess->readAllStandardOutput();
-	//		qDebug() << "FileOperatorProcess Output:" << output;
-	//	});// 连接标准输出信号监视子进程；
+	QProcess* fileOperatorProcess = new QProcess(&a);// 创建文件传输进程
+    QObject::connect(fileOperatorProcess, &QProcess::readyReadStandardOutput, [=]
+        {
+			QByteArray output = fileOperatorProcess->readAllStandardOutput();
+			qDebug() << "FileOperatorProcess Output:" << output;
+		});// 连接标准输出信号监视子进程；
 
- //   QObject::connect(fileOperatorProcess, &QProcess::errorOccurred, [](QProcess::ProcessError error){
- //       qDebug() << "Process error:" << error;
- //   });
+    QObject::connect(fileOperatorProcess, &QProcess::errorOccurred, [](QProcess::ProcessError error){
+        qDebug() << "Process error:" << error;
+    });
 
     // 配置文件加载
     QString appPath = QCoreApplication::applicationDirPath();
@@ -55,7 +82,7 @@ int main(int argc, char *argv[]) {
     if (!QFile::exists(exePath)) {
         qWarning() << "FileOperatorProcess.exe not found at:" << exePath;
     }
-    //fileOperatorProcess->start(exePath);
+    fileOperatorProcess->start(exePath);
     mainwindow w;
     w.show();
     return QApplication::exec();

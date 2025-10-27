@@ -133,3 +133,13 @@ void ChatHistoryDataModel::loading_befor_chat_history()
 		return;
 	this->loading_befor_chat_history(this->user_id);
 }
+
+
+void ChatHistoryDataModel::slot_received_message(const ChatMessage& message, QString const& uid)
+{
+	if (this->user_id != uid)
+		return;
+	this->appendMessages({ message });
+	this->chatHistoryView->scrollToBottom();
+	HistoryDB_Mgr::getInstance()->addMessage(uid, message);
+}

@@ -2,12 +2,14 @@
 #include <QDebug>
 
 #include "HistoryDB_Mgr.h"
+#include "TcpMgr.h"
 #include "the_user_icon_mgr.h"
 
 NewFriendApplicationListModel::NewFriendApplicationListModel(QObject* parent) :QAbstractListModel(parent)
 {
 	connect(HistoryDB_Mgr::getInstance().get(), &HistoryDB_Mgr::sig_applicationListReady, this, &NewFriendApplicationListModel::slot_history_applications_loading_done);
 	connect(the_user_icon_mgr::getInstance().get(), &the_user_icon_mgr::sig_applications_user_icon_loading_done, this, &NewFriendApplicationListModel::slot_the_application_list_user_avatar_loading_done);
+	connect(TcpMgr::getInstance().get(), &TcpMgr::sig_friend_application_list, this, &NewFriendApplicationListModel::slot_new_application_list_insert_model);
 	this->getApplicationList();//获取申请列表为了避免在构造函数中直接调用异步函数导致的问题，延时1秒再获取
 	this->getApplicationListAvatar();//获取申请列表头像
 }
@@ -17,6 +19,22 @@ int NewFriendApplicationListModel::rowCount(const QModelIndex& parent) const
 {
 	return static_cast<int>(this->model.size());
 }
+
+
+
+
+NewFriendApplicationlNS::user_application NewFriendApplicationListModel::get_application_user_info(QModelIndex index)const
+{
+	auto row = index.row();
+	if (row < 0 || row >= this->model.size()) {
+		return {};
+	}
+	return this->model.at(row);
+}
+
+
+
+
 
 QVariant NewFriendApplicationListModel::data(const QModelIndex& index, int role) const
 {
@@ -36,6 +54,8 @@ QVariant NewFriendApplicationListModel::data(const QModelIndex& index, int role)
 		return  item.time;
 	case StatusRole:
 		return item.status;
+	case UserIdRole:
+		return item.user_id;
 	default:
 		return {};
 	}
@@ -113,4 +133,51 @@ void NewFriendApplicationListModel::getApplicationListAvatar()
 		the_user_icon_mgr::getInstance()->get_applications_user_icon_async(user_id_list);//异步获取申请列表头像
 		qDebug() << "Requested application list avatars for" << user_id_list.size() << "users";
 	}
+}
+
+
+
+bool NewFriendApplicationListModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+	auto row = index.row();
+	if (row < 0 || row >= this->model.size()) {
+		return false;
+	}
+	auto& item = this->model[row];
+	switch (role) {
+	case AvatarRole:
+		item.avatar = value.value<QPixmap>();
+		break;
+	case UserNameRole:
+		item.username = value.toString();
+		break;
+	case MsgRole:
+		item.msg = value.toString();
+		break;
+	case TimeRole:
+		item.time = value.toDateTime();
+		break;
+	case StatusRole:
+		item.status = value.toInt();
+		break;
+	case UserIdRole:
+		item.user_id = value.toString();
+		break;
+	default:
+		return false;
+	}
+	emit dataChanged(index, index, { role });
+	return true;
+}
+
+
+void NewFriendApplicationListModel::slot_new_application_list_insert_model(const std::vector<NewFriendApplicationlNS::user_application>& application_list)
+{
+	for (const auto& application : application_list)
+	{
+		QAbstractListModel::beginInsertRows(QModelIndex(), 0, 0);//在最前面插入
+		this->model.insert(0, application);
+		QAbstractListModel::endInsertRows();
+	}
+	emit this->sig_store_applications_avatar(this->model);//存储好友申请头像
 }

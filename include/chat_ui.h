@@ -31,11 +31,13 @@ private:
     QHash<QString, int>*the_stack_widget_index;
 public:
     explicit chat_ui(QWidget *parent = nullptr);
+    void get_friend_requests_list();
     void add_user_list();
     ~chat_ui();
 public  slots:
     void when_touch_close();
     void slot_loading_the_user_list();
+    void slot_replace_user_icon(QPixmap pix);
 
 protected:
     void mouseMoveEvent(QMouseEvent* event) override;

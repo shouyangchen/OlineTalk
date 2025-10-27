@@ -335,7 +335,7 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>同意</string>
+                <string>申请</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignmentFlag::AlignCenter</set>

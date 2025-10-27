@@ -57,11 +57,11 @@ void NewFriendApplicationListDelegate::paint(QPainter* painter, const QStyleOpti
 	//status 0:未处理 1:已同意 2:已拒绝
 	if (status)
 	{
-		QBrush brush = status == 1 ? QBrush(Qt::white) : QBrush(Qt::red);
+		QBrush brush = status == 1 ? QBrush(Qt::white) : QBrush(QColor(220,20,60));
 		painter->setBrush(brush);
 		painter->setPen(Qt::NoPen);
 		painter->drawRoundedRect(status_rect.adjusted(10, 0, -10, 0), 10, 10);
-		painter->setPen(Qt::white);
+		painter->setPen(Qt::gray);
 		QString status_text = status == 1 ? "已同意" : "已拒绝";
 		painter->drawText(status_rect, Qt::AlignCenter, status_text);
 	}
